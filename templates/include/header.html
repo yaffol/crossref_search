@@ -1,0 +1,42 @@
+<div class="row-fluid">
+    <div class="span-header span3" style="padding-top: 0.7em;">
+        <a class="home-link" href="/">
+            <img src="//assets.crossref.org/logo/crossref-logo-landscape-200.png">
+        </a>
+    </div>
+    <div class="span-header span9">
+        <div class="pull-right">
+            <div class="simple-nav-outer">
+                <div class="simple-nav smaller">
+                    <div class="pull-right">
+                        <a class="sign-in-link" href="#">
+                            <img src="{{ url_for('static', filename='img/orcid_24x24.gif') }}">
+                            Sign in
+                        </a>
+                        <script>
+                            $(document).ready(function () {
+                                $('.sign-in-link').click(function (e) {
+                                    $.oauthpopup({
+                                        path: '/auth/orcid',
+                                        callback: function () {
+                                            document.location.reload(true);
+                                        }
+                                    });
+                                    e.preventDefault();
+                                    return false;
+                                });
+                            });
+                        </script>
+
+                    </div>
+                    <a href="/works">Works</a>
+                    <a href="/funding">Funding Data</a>
+                    <a href="/references">Link References</a>
+                    <a href="/help/status">Status</a>
+                    <a href="https://api.crossref.org">API</a>
+                    <a href="/help/search">Help</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

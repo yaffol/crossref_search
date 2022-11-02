@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+
+  .item-paging {
+    text-align: center;
+    margin-top: 1em;
+  }
+  .list-info {
+     margin-bottom: 2em;
+     background-color: #f8f8f8;
+     padding: 1em;
+     margin-bottom: 1em;
+  }
+  .gap {
+    display: none;
+  }
+
+  .nav-list > .active > a {
+    background-color: rgb(56, 166, 203);
+  }
+
+  .nav-list > .active > a:hover {
+    background-color: rgb(6, 116, 153);
+  }
+
+  .footer {
+    margin-bottom: 10px;
+  }
+
+  h6 b, h6 a {
+    font-size: 1.2em;
+    line-height: 1.3em;
+    margin-left: 0.3em;
+  }
+
+  h6 b {
+    color: black;
+  }
+
+
+</style>
+<div class="row-fluid">
+  <div class="span3">
+    {% include 'facets.html' %}
+  </div>
+  <div class="span9">
+    <div class="list-info">
+      <div class="pull-right">
+        <h6 class="number">
+          {% if pagination %}
+           Page {{ pagination.page }} of {{ pagination.total }} results
+          {% endif %}
+        </h6>
+      </div>
+      <span>
+        <h6>
+          Sort by:
+          {% if page.sort_type == 'year' %}
+            <a href="{{ page.sort_url }}&sort=score">relevance</a>
+            <b>publication year</b>
+          {% else %}
+            <b>relevance</b>
+            <a href="{{ page.sort_url }}&sort=year">publication year</a>
+          {% endif %}
+          {% if branding and branding.downloads.include and items %}
+            <span style="margin-left: 10em;">
+              <a href="<%= fundref_csv_link(page[:funder][:id]) %>">
+                <i class="icon-download-alt"></i>
+                Download as CSV
+              </a>
+            </span>
+          {% endif %}
+        </h6>
+      </span>
+    </div>
+    <div class="row-centered">
+        <form action="/search/works" id="search-form" method="GET">
+            <div class="search">
+                <input class="input input-xlarge search-input" id="search-input" name="q"
+                       placeholder="Title, author, DOI, ORCID iD, etc." type="text" value="">
+                <i class="icon-search"></i>
+                <input id="from-ui" name="from_ui" type="hidden" value="yes">
+                <a href="/help/search">Search help</a>
+            </div>
+        </form>
+    </div>
+    {% include 'item_list.html' %}
+    <div class="item-paging bottom">
+      {{ page.pagination.links }}
+    </div>
+  </div>
+</div>
+{% include 'cite_box.html' %}
+<hr/>
+<div class="footer">
+  {% if branding and branding.footer_links_profile == 'chorus' %}
+    <a href="http://chorusaccess.org/contact-us">Leave feedback</a>
+  {% else %}
+    Feedback:
+    <a href="mailto:support@crossref.org">support@crossref.org</a>
+  {% endif %}
+</div>
+{% endblock %}

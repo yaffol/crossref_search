@@ -1,0 +1,479 @@
+<style>
+
+  .item-tab.conf-proc {
+    border-left: 4px solid rgb(49, 145, 177);
+  }
+  .item-data {
+    padding: 1em;
+  }
+  td {
+    vertical-align: top;
+    padding: .7em;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  table:first-child {
+    border-top: 1px solid #eee;
+  }
+  tr {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5em;
+  }
+  .item-data a {
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+  }
+  .hl {
+    font-weight: bolder;
+  }
+  .extra {
+    color: #999;
+    font-size: 1.2em;
+    line-height: 1.3em;
+  }
+  .lead {
+    margin-bottom: .7em;
+  }
+  .oa-tooltip, .oa-tooltip:visited, .oa-tooltip:hover {
+    color: rgb(246, 130, 18);
+    text-decoration: none;
+  }
+  .claim-ok {
+    color: rgb(167, 204, 145);
+  }
+  .claim-ok:hover {
+    color: rgb(137, 194, 115);
+  }
+  .claim-warn {
+    color: rgb(246, 130, 18);
+  }
+  .claim-warn:hover {
+    color: rgb(216, 100, 0);
+  }
+  .claim-none {
+    color: #ccc;
+  }
+  .claim-none:hover {
+    color: rgb(167, 204, 145);
+  }
+  .item-links-outer {
+    margin-top: 1.5em;
+    position: relative;
+  }
+  .item-links {
+    position: absolute;
+    top: 50%;
+    height: 1.6em;
+    margin-top:-0.8em;
+  }
+  .item-links img {
+    margin-top: -0.33em;
+  }
+  .item-links a {
+    margin-right: 1.5em;
+  }
+  .item-data .extra span {
+    font-size: .9em;
+    line-height: 1.5em;
+  }
+  .label {
+    font-weight: normal;
+  }
+  .item-data .lead {
+    margin-bottom: .2em;
+    font-weight: 500;
+  }
+  .item-data .extra b {
+    font-size: 1.1em;
+  }
+  .modal-body p {
+    font-size: 1.3em;
+    line-height: 1.2em;
+  }
+  .well-transparent {
+    border: none;
+    text-transform: uppercase;
+    font-size: .9em;
+    padding: .8em;
+    cursor: pointer;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+  }
+  .well-transparent i {
+    font-size: 1.2em;
+  }
+  .well-transparent:hover {
+    text-decoration: underline;
+  }
+  .btn-container button {
+    margin-left: .5em;
+    margin-top: 1em;
+  }
+  .btn-container {
+    text-align: right;
+  }
+  .btn-container button i {
+    margin-right: 0.4em;
+  }
+
+
+</style>
+<script>
+
+  MAX_EXPAND_CHARS = 240;
+
+  $(document).ready(function() {
+    $('.oa-tooltip').tooltip({
+      title: 'Article is published in a journal present in the Directory of Open Access Journals.'
+    });
+
+    $('.expand').each(function() {
+      if ($(this).text().length > MAX_EXPAND_CHARS) {
+        $(this).data('full-text', $(this).text());
+        $(this).text($(this).text().substring(0, MAX_EXPAND_CHARS));
+        $(this).append($('<a>').addClass('expander').text('...').attr('href', '#'));
+      }
+    });
+
+    $('.expander').click(function(e) {
+      var parent = $(this).parent();
+      parent.text(parent.data('full-text'));
+      e.preventDefault();
+      return false;
+    });
+
+    var replacePopoverWithLogin = function($popover) {
+      var $p = $('<p>').text('Your sign in to ORCID has expired. Please sign back in.')
+      var $btnLogin = $('<button>').addClass('btn').addClass('btn-info').addClass('login-btn').text('Sign in to ORCID');
+      var $btnClose = $('<button>').addClass('btn').addClass('close-btn').text('Close');
+      var $btns = $('<div>').addClass('btn-container').append($btnClose).append($btnLogin);
+      var $content = $('<div>').append($p).append($btns);
+      var $newPopoverContent = $('<div>').addClass('popover-content').append($content);
+
+      $('.popover-content').replaceWith($newPopoverContent);
+
+      $('.login-btn').click(function(e) {
+        $.oauthpopup({path: '/auth/orcid',
+                      callback: function() {
+                        location.reload();
+                      }
+        });
+        e.preventDefault();
+        return false;
+      });
+
+      $('.close-btn').click(function(e) {
+        $popover.popover('destroy');
+        e.preventDefault();
+        return false;
+      });
+    }
+
+    var performSync = function($popover) {
+      $.ajax({
+        url: '/orcid/sync',
+        success: function(data) {
+          if (data['status'] == 'ok') {
+            location.reload();
+          } else if (data['status'] == 'oauth_timeout') {
+            replacePopoverWithLogin($popover);
+          } else {
+            location.reload();
+          }
+        },
+        error: function() {
+          location.reload();
+        }
+      });
+    }
+
+    var claimOkClickFn = function(e) {
+      $('.claim-none').popover('destroy');
+      $('.claim-warn').popover('destroy');
+      $('.claim-ok').popover('destroy');
+
+      var $p = $('<p>').text('Last time we checked, this work was in your ORCID record. Refresh to retrieve changes to your works from ORCID.');
+      var $btnClose = $('<button>').addClass('btn').addClass('claim-close-btn').text('Close');
+      var $btnRefresh = $('<button>').addClass('btn').addClass('btn-warning').addClass('claim-refresh-btn').text('Refresh');
+      var $btns = $('<div>').addClass('btn-container').append($btnClose).append($btnRefresh);
+      var $content = $('<div>').append($p).append($btns);
+      var $popover = $(this);
+
+      $(this).popover({
+        placement: 'bottom',
+        html: true,
+        title: 'Work is in your ORCID record',
+        content: $('<div>').append($content).html(),
+        trigger: 'manual'
+      });
+
+      $(this).popover('show');
+
+      $('.claim-close-btn').click(function(e) {
+        if (!$(this).hasClass('disabled')) {
+          $popover.popover('destroy');
+        }
+        e.preventDefault();
+        return false;
+      });
+
+      $('.claim-refresh-btn').click(function(e) {
+        if (!$(this).hasClass('disabled')) {
+          $(this).parent().find('.btn').addClass('disabled');
+          $(this).prepend($('<i>').addClass('icon-refresh').addClass('icon-spin'));
+          performSync($popover);
+        }
+        e.preventDefault();
+        return false;
+      });
+
+      e.preventDefault();
+      return false;
+    }
+
+    var performClaim = function($popover) {
+      $.ajax({
+          url: '/orcid/claim',
+          data: {doi: $popover.attr('id')},
+          success: function(data) {
+            if (data['status'] == 'ok' || data['status'] == 'ok_visible') {
+              $popover.popover('destroy');
+              $popover.removeClass('claim-none');
+              $popover.unbind('click');
+              $popover.find('i').removeClass('icon-circle-blank');
+              $popover.find('i').addClass('icon-circle');
+
+              if (data['status'] == 'ok') {
+                $popover.addClass('claim-warn');
+                $popover.click(claimWarnClickFn);
+                $popover.find('span').text('Not visible');
+              } else {
+                $popover.addClass('claim-ok');
+                $popover.click(claimOkClickFn);
+                $popover.find('span').text('In your record');
+              }
+            } else if (data['status'] == 'oauth_timeout') {
+              replacePopoverWithLogin($popover);
+            } else {
+              $popover.popover('destroy');
+            }
+          },
+          error: function() {
+            $popover.popover('destroy');
+          }
+      });
+    }
+
+    var claimNoneClickFn = function(e) {
+      $('.claim-none').popover('destroy');
+      $('.claim-warn').popover('destroy');
+      $('.claim-ok').popover('destroy');
+
+      var $p = $('<p>').text('Are you sure you want to add this work to your ORCID record?');
+      var $btnNo = $('<button>').addClass('btn').addClass('claim-no-btn').text('No');
+      var $btnOk = $('<button>').addClass('btn').addClass('btn-success').addClass('claim-ok-btn').text('Yes');
+      var $btns = $('<div>').addClass('btn-container').append($btnNo).append($btnOk);
+      var $content = $('<div>').append($p).append($btns);
+      var $popover = $(this);
+
+      $(this).popover({
+        placement: 'bottom',
+        html: true,
+        title: 'Add work to ORCID',
+        content: $('<div>').append($content).html(),
+        trigger: 'manual'
+      });
+
+      $(this).popover('show');
+
+      $('.claim-no-btn').click(function(e) {
+        if (!$(this).hasClass('disabled')) {
+          $popover.popover('destroy');
+        }
+        e.preventDefault();
+        return false;
+      });
+
+      $('.claim-ok-btn').click(function(e) {
+        if ($(this).hasClass('disabled')) {
+          return;
+        }
+
+        $(this).prepend($('<i>').addClass('icon-refresh').addClass('icon-spin'));
+        $(this).addClass('disabled');
+        $(this).parent().find('.btn').addClass('disabled');
+
+        performClaim($popover);
+
+        e.preventDefault();
+        return false;
+      });
+
+      e.preventDefault();
+      return false;
+    }
+
+    var claimWarnClickFn = function(e) {
+      $('.claim-none').popover('destroy');
+      $('.claim-warn').popover('destroy');
+      $('.claim-ok').popover('destroy');
+
+      var $text = $('<div>').html('<span>Work has been added to your ORCID record but is marked as private. Visit your <a href="https://orcid.org/my-orcid" target="_blank"><i class="icon-external-link"></i>ORCID record</a> to set this work\'s visibility to public or limited.<br/><br/>If you have removed this private work from your ORCID record you can click the button below to remove it from Crossref Metadata Search.</span>');
+      var $btnClose = $('<button>').addClass('btn').addClass('claim-close-btn').text('Close');
+      var $btnRefresh = $('<button>').addClass('btn').addClass('btn-warning').addClass('claim-refresh-btn').text('Refresh');
+      var $btnRemove = $('<button>').addClass('btn').addClass('btn-danger').addClass('claim-remove-btn').text('Remove');
+      var $btns = $('<div>').addClass('btn-container').append($btnClose).append($btnRefresh).append($btnRemove);
+      var $content = $('<div>').append($text).append($btns);
+      var $popover = $(this);
+
+      $(this).popover({
+        placement: 'bottom',
+        html: true,
+        title: 'Work is private in your ORCID record',
+        content: $('<div>').append($content).html(),
+        trigger: 'manual'
+      });
+
+      $(this).popover('show');
+
+      $('.claim-close-btn').click(function(e) {
+        if (!$(this).hasClass('disabled')) {
+          $popover.popover('destroy');
+        }
+        e.preventDefault();
+        return false;
+      });
+
+      $('.claim-refresh-btn').click(function(e) {
+        if (!$(this).hasClass('disabled')) {
+          $(this).parent().find('.btn').addClass('disabled');
+          $(this).prepend($('<i>').addClass('icon-refresh').addClass('icon-spin'));
+          performSync($popover);
+        }
+        e.preventDefault();
+        return false;
+      });
+
+      $('.claim-remove-btn').click(function(e) {
+        if ($(this).hasClass('disabled')) {
+          return;
+        }
+
+        $(this).prepend($('<i>').addClass('icon-refresh').addClass('icon-spin'));
+        $(this).parent().find('.btn').addClass('disabled');
+
+        $.ajax({
+          url: '/orcid/unclaim',
+          data: {doi: $popover.attr('id')},
+          success: function() {
+            $popover.popover('destroy');
+            $popover.removeClass('claim-warn');
+            $popover.addClass('claim-none');
+            $popover.unbind('click');
+            $popover.click(claimNoneClickFn);
+            $popover.find('span').text('Add to ORCID');
+            $popover.find('i').removeClass('icon-circle');
+            $popover.find('i').addClass('icon-circle-blank');
+          },
+          error: function() {
+            $popover.popover('destroy');
+          }
+        });
+        e.preventDefault();
+        return false;
+      });
+
+      e.preventDefault();
+      return false;
+    }
+
+    $('.claim-ok').click(claimOkClickFn);
+    $('.claim-warn').click(claimWarnClickFn);
+    $('.claim-none').click(claimNoneClickFn);
+  });
+
+
+</script>
+<table>
+    {% for item in items %}
+    {% include 'item.html' %}
+    {% endfor %}
+</table>
+{% for item in items %}
+  {% if item.citations %}
+    <div class="modal hide" id="citations-{{item.hashed}}">
+      <div class="modal-header">
+        <button class="close" data-dismiss="modal" type="button">&times;</button>
+        <h3>
+          Patent citations for
+          {{item.doi}}
+        </h3>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Title</th>
+          </tr>
+          {%  for citation in item.citations %}
+            <tr>
+              <td>
+                {{citation.id}}
+              </td>
+              <td>
+                {{citation.type}} {{citation.authority}}
+              </td>
+              <td>
+                <a href=" {{citation.url}} ">
+                  {{citation.title}}
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  {% endif %}
+  {% if signed_in and not item.user_claimed %}
+    <div class="modal hide" id="claim-{{item.hashed}}">
+      <div class="doi" id="doi-<%= item.hashed %>" style="display: none;">
+        {{ item.doi }}
+      </div>
+      <div class="modal-header">
+        <button class="close" data-dismiss="modal" type="button">&times;</button>
+        <h3>
+          Add
+          {{ item.doi }}
+          to your ORCID record
+        </h3>
+      </div>
+      <div class="modal-body">
+        <p>
+          You are adding
+          <b>
+            {{ item.coins_atitle }}
+          </b>
+          to your ORCID record. Double check that you were a
+          contributor to this work.
+        </p>
+        <p>Add this work to your ORCID record?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" type="button">No, thanks</button>
+        <button class="btn btn-primary" id="claim-button-{{ item.hashed }}">Yes, do it</button>
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}
+<script>
+
+  function showCitationsBox(hashed) {
+    $('#citations-' + hashed).modal();
+  }
+
+
+</script>
