@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout/results_layout.html" %}
 {% block content %}
 <style>
 
@@ -45,11 +45,12 @@
     {% include 'facets.html' %}
   </div>
   <div class="span9">
+    {% include 'include/search_header.html' %}
     <div class="list-info">
       <div class="pull-right">
         <h6 class="number">
-          {% if pagination %}
-           Page {{ pagination.page }} of {{ pagination.total }} results
+          {% if page.pagination %}
+           Page {{ page.pagination.page }} of {{ page.pagination.total }} results
           {% endif %}
         </h6>
       </div>
@@ -73,17 +74,6 @@
           {% endif %}
         </h6>
       </span>
-    </div>
-    <div class="row-centered">
-        <form action="/search/works" id="search-form" method="GET">
-            <div class="search">
-                <input class="input input-xlarge search-input" id="search-input" name="q"
-                       placeholder="Title, author, DOI, ORCID iD, etc." type="text" value="">
-                <i class="icon-search"></i>
-                <input id="from-ui" name="from_ui" type="hidden" value="yes">
-                <a href="/help/search">Search help</a>
-            </div>
-        </form>
     </div>
     {% include 'item_list.html' %}
     <div class="item-paging bottom">

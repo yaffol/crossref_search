@@ -1,0 +1,32 @@
+
+<div class="simple-nav-outer">
+    <div class="simple-nav smaller">
+        <div class="pull-right">
+            <span class="sign-in-link" href="#" >
+                <img src="{{ url_for('static', filename='img/orcid_24x24.gif') }}">
+                Sign in
+            </span>
+            <script>
+                $(document).ready(function () {
+                    $('.sign-in-link').click(function (e) {
+                        $.oauthpopup({
+                            path: '/auth/orcid',
+                            callback: function () {
+                                document.location.reload(true);
+                            }
+                        });
+                        e.preventDefault();
+                        return false;
+                    });
+                });
+            </script>
+
+        </div>
+        <a href="/" class="{% if page.name == 'works' %}link-selected-fg{% endif %}">Works</a>
+        <a >Funding Data</a>
+        <a >Link References</a>
+        <a >Status</a>
+        <a href="https://api.crossref.org">API</a>
+        <a ">Help</a>
+    </div>
+</div>

@@ -14,6 +14,7 @@ home = Blueprint('', __name__)
 def works():
     if request.args and request.args['q']:
         items, page = service.search_query(constants.CATEGORY_WORKS, request)
+        page['name'] = constants.CATEGORY_WORKS
         return render_template("results.html", items=items, page=page)
 
     return render_template("splash.html")
@@ -21,4 +22,5 @@ def works():
 
 @home.route('/')
 def index():
-    return render_template("splash.html")
+    page = {'name': constants.CATEGORY_WORKS}
+    return render_template("splash.html", page=page)

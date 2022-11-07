@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout/base.html" %}
 {% block content %}
 <style>/*<![CDATA[*/.cr-red {
   color: rgb(192, 70, 62);
@@ -42,7 +42,7 @@ h1 {
   $('#search-input').focus();
 });/*]]>*/</script>
 
-{% if page and page[branding][search_typeahead] == funder_name %}
+{% if page.branding and page.branding.search_typeahead == funder_name %}
   <script>
 
     $(document).ready(function() {

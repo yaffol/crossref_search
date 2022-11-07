@@ -148,6 +148,7 @@ def search_query(category, request):
                 'sort_url': get_request_url(request, ['sort']),
                 'publisher_url': get_request_url(request, ['publisher']),
                 'sort_type': sort_type(request),
-                'api_url': constants.WORKS_API_URL
+                'api_url': constants.WORKS_API_URL,
+                'query': request.args['q']
                 }
         return items, page
