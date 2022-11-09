@@ -9,6 +9,8 @@ search = Blueprint('search', __name__)
 
 home = Blueprint('', __name__)
 
+help = Blueprint('help', __name__)
+
 
 @search.route('/works')
 def works():
@@ -24,3 +26,10 @@ def works():
 def index():
     page = {'name': constants.CATEGORY_WORKS}
     return render_template("splash.html", page=page)
+
+@help.route('/works')
+def works_search_help():
+    page = {'name': constants.CATEGORY_WORKS}
+    return render_template("search_help.html", page=page)
+
+

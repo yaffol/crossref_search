@@ -140,7 +140,8 @@ def search_query(category, request):
     res = requests.get(url)
 
     if res.status_code == 200:
-        items, total = get_items(res.json())
+        items, total = get_items(core.test_data.test_result)
+        #items, total = get_items(res.json())
         page_number = request.args.get(get_page_parameter(), type=int, default=1)
         pagination = Pagination(page=page_number, total=total, search=False, per_page=constants.ROWS_PER_PAGE,
                                 href=get_pagination_url(request))

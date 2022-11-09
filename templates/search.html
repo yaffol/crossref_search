@@ -1,0 +1,114 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<style>/*<![CDATA[*/.cr-red {
+  color: rgb(192, 70, 62);
+}
+.search {
+  margin-top: 2em;
+  position: relative;
+}
+.search i {
+  position: absolute;
+  top: 0.25em;
+  left: 0.3em;
+  font-size: 2.8em;
+  color: #aaa;
+}
+.search input {
+  padding-left: 1.5em;
+  line-height: 1.2em;
+  height: 1.4em;
+  font-size: 2.5em;
+  width: 20em;
+}
+h1 {
+  font-size: 4em;
+  line-height: 1.2em;
+}
+.row-centered {
+  margin: 0 auto;
+  width: 700px;
+}
+#help-accordion {
+  margin-top: 2em;
+  margin-left: 4px;
+}
+.break-below {
+  margin-bottom: 6em;
+}/*]]>*/</style>
+
+<script>/*<![CDATA[*/$(document).ready(function() {
+  $('#help-body').collapse('hide');
+  $('#search-input').focus();
+});/*]]>*/</script>
+
+{% if page.branding and page.branding.search_typeahead == funder_name %}
+  <script>
+
+    $(document).ready(function() {
+      var fundersRemote = new Bloodhound({
+        name: 'funders',
+        datumTokenizer: function(d) { return d.tokens; },
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+          url: "#{page[:branding][:query_url]}"+'/funders?query=%QUERY',
+          filter: function(dataResponse) { return dataResponse.message.items; }
+        },
+        limit: 16,
+        dupDetector: function(r, l) { return false; }
+      });
+
+      fundersRemote.initialize();
+
+      var suggestionLayout = Hogan.compile('<p>{{name}} <small>{{location}}</small></p>');
+
+      $('#search-input').typeahead(null, {
+        name: 'funders',
+        source: fundersRemote.ttAdapter(),
+        templates: {
+          suggestion: function(d) { return suggestionLayout.render(d) }
+        },
+        limit: 16
+      });
+
+      $('#search-input').bind('typeahead:autocompleted typeahead:selected', function(e, datum) {
+        $('#fundref-input').val(datum['id']);
+        $('#fundref-form').submit();
+      });
+    });
+
+
+  </script>
+{% endif %}
+{% block search_content %}
+<!--<%= partial :search_header, :page => page.merge({:disable_search_box => true, :big_logo => true}) %>-->
+<div class="spacer" style="margin-top: 12em;"></div>
+<div class="row-centered">
+<!--  <% if page[:branding][:header_links_profile] == :crmds %>-->
+    <span style="font-size: 3em; line-height: 1em; color: #4f5858;">
+      Search the metadata
+      <br/>
+      of
+      journal articles, books, standards, datasets & more
+    </span>
+<!--  <% elsif page[:branding][:header_links_profile] == :fundref %>-->
+<!--    <span style="font-size: 3em; line-height: 1em; color: #4f5858;">-->
+<!--      Search funders connected to-->
+<!--      published works with funding data-->
+<!--    </span>-->
+<!--  <% end %>-->
+</div>
+<div class="spacer" style="margin-top: 3em;"></div>
+<div class="row-centered">
+    <form action="/search/works" id="search-form" method="GET">
+        <div class="search">
+            <input class="input input-xlarge search-input" id="search-input" name="q"
+                   placeholder="Title, author, DOI, ORCID iD, etc." type="text" value="">
+            <i class="icon-search"></i>
+            <input id="from-ui" name="from_ui" type="hidden" value="yes">
+            <a href="/help/works">Search help</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% endblock %}

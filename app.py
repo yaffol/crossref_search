@@ -1,11 +1,12 @@
 from flask import Flask
-from core.route.search import search, home
+from core.route.search import search, home, help
 
 
 def create_app():
     app = Flask(__name__)
 
     app.register_blueprint(search, url_prefix='/search')
+    app.register_blueprint(help, url_prefix='/help')
     app.register_blueprint(home, url_prefix='/')
 
     return app
