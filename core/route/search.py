@@ -43,11 +43,9 @@ def funders():
     elif request.args and 'id' in request.args:
         items, page = service.search_query(constants.CATEGORY_FUNDERS, request)
         page['name'] = constants.CATEGORY_FUNDERS
-        page['menu'] = constants.SEARCH_MENU_CODE
         return render_template("results.html", items=items, page=page)
 
-    page = {'name': constants.CATEGORY_FUNDERS,
-            'menu': constants.SEARCH_MENU_CODE}
+    page = {'name': constants.CATEGORY_FUNDERS}
     return render_template("funder_search.html", page=page)
 
 

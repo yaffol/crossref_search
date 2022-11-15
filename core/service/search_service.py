@@ -3,9 +3,7 @@ import core.constants as constants
 import calendar
 import furl
 from flask_paginate import Pagination, get_page_parameter
-from flask import escape
 
-import core.test_data
 import core.utils as utils
 
 
