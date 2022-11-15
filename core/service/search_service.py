@@ -3,6 +3,7 @@ import core.constants as constants
 import calendar
 import furl
 from flask_paginate import Pagination, get_page_parameter
+from flask import escape
 
 import core.test_data
 import core.utils as utils
@@ -24,27 +25,34 @@ def get_api_url(category, request):
     :return:
     """
 
-    query = request.args['q']
-
     url = None
+    params = {}
     if category == constants.CATEGORY_WORKS:
-        url = constants.WORKS_API_URL + "?query=" + query
+        if 'q' in request.args:
+            url = constants.WORKS_API_URL + "?query=" + request.args['q']
+
+        sort_by = sort_type(request)
+        if sort_by == 'year':
+            sort_by = 'published'
+        url += '&sort=' + sort_by
+
+    elif category == constants.CATEGORY_FUNDERS:
+        if 'q' in request.args:
+            url = constants.FUNDERS_API_URL + "?query=" + request.args['q']
+        elif 'id' in request.args:
+            url = constants.FUNDER_WORKS_API_URL.format(request.args['id'])
 
     if 'page' in request.args:
         page_value = int(request.args['page'])
         offset = (page_value - 1) * constants.ROWS_PER_PAGE
-        url += '&offset=' + str(offset)
+        params['offset'] = str(offset)
 
     if 'publisher' in request.args:
-        url += '&query.container-title=' + request.args['publisher']
+        params['query.container-title'] = request.args['publisher']
 
-    sort_by = sort_type(request)
-    if sort_by == 'year':
-        sort_by = 'published'
-    url += '&sort=' + sort_by
-    url += '&rows=' + str(constants.ROWS_PER_PAGE)
+    params['rows'] = str(constants.ROWS_PER_PAGE)
 
-    return url
+    return furl.furl(url).add(params)
 
 
 def get_request_url(request, exclude):
@@ -76,8 +84,7 @@ def format_item_type(item):
     return item_type
 
 
-def format_published_date(item):
-    published_date = None
+def add_published_date(item, row):
     published = None
     if "published-print" in item:
         published = item["published-print"]
@@ -96,23 +103,90 @@ def format_published_date(item):
             if date_parts_len > 0:
                 published_date += str(date_parts[0])
 
-    return published_date
+            row['published_date'] = published_date
 
 
-def get_container_title(item):
-    container_title = None
-
+def add_publication(item, row):
     if "container-title" in item and len(item["container-title"]) > 0:
         container_title = item["container-title"][0]
 
-    return container_title
+        row['publication'] = container_title
 
 
-def get_alternative_id(item):
+def add_alternative_id(item, row):
     if 'alternative-id' in item:
-        return item['alternative-id']
-    else:
-        return None
+        row['supplementary_ids'] = item['alternative-id']
+
+
+def add_doi(item, row):
+    if 'DOI' in item:
+        row["display_doi"] = utils.get_doi_url(item['DOI'])
+        row["doi"] = item['DOI']
+
+
+def add_grant_info(item, row):
+    if 'funder' in item:
+        funders = []
+        for funder in item['funder']:
+            if 'name' in funder and 'award' in funder:
+                funders.append(funder['name']+" ("+",".join(funder['award'])+")")
+        if len(funders) > 0:
+            row['grant_info'] = " | ".join(funders)
+
+
+def add_names(items_list, item_name, row):
+    if items_list:
+        items = []
+        for item in items_list:
+            name = None
+            if 'name' in item:
+                name = item['name']
+            elif 'given' in item and 'family' in item:
+                name = item['given'] + " " + item['family']
+            elif 'given' in item:
+                name = item['given']
+            if name:
+                items.append(name)
+        if len(items) > 0:
+            row[item_name] = " | ".join(items)
+
+
+def add_people(item, row):
+    add_names(item['editor'] if 'editor' in item else None, 'editors', row)
+    add_names(item['author'] if 'author' in item else None, 'authors', row)
+    add_names(item['chair'] if 'chair' in item else None, 'chairs', row)
+    add_names(item['translator'] if 'translator' in item else None, 'translators', row)
+
+
+def add_supplementary_id(item, row):
+    if 'alternative-id' in item:
+        row['supplementary_ids'] = " | ".join(item['alternative-id'])
+
+
+def add_id(item, row):
+    if 'id' in item:
+        row['id'] = item['id']
+
+
+def add_location(item, row):
+    if 'location' in item:
+        row['location'] = item['location']
+
+
+def add_title(item, row):
+    if 'title' in item:
+        row['title'] = item["title"][0].replace("\\", "") if 'title' in item else ''
+
+
+def add_name(item, row):
+    if 'name' in item:
+        row['name'] = item['name']
+
+
+def add_type(item, row):
+    if "type" in item:
+        item_type = item["type"]
+        row['type'] = item_type.replace('-', ' ').upper()
 
 
 def get_items(obj):
@@ -122,17 +196,38 @@ def get_items(obj):
         total = obj["message"]["total-results"]
     if obj["message"]["items"]:
         for item in obj["message"]["items"]:
-            items.append({
-                "title": item["title"][0] if 'title' in item else '',
-                "type": format_item_type(item),
-                "published_date": format_published_date(item),
-                "publication": get_container_title(item),
-                "display_doi": utils.get_doi_url(item['DOI']),
-                "doi": item['DOI'],
-                "supplementary_ids": get_alternative_id(item)
-            })
+            row = {}
+            add_type(item, row)
+            add_published_date(item, row)
+            add_publication(item, row)
+            add_alternative_id(item, row)
+            add_title(item, row)
+            add_name(item, row)
+            add_id(item, row)
+            add_location(item, row)
+            add_doi(item, row)
+            add_grant_info(item, row)
+            add_people(item, row)
+            add_supplementary_id(item, row)
+
+            items.append(row)
 
     return items, total
+
+
+def get_query_string(request, category):
+    if category == constants.CATEGORY_WORKS:
+        if 'q' in request.args:
+            return request.args['q']
+
+    elif category == constants.CATEGORY_FUNDERS:
+        if 'id' in request.args:
+            res = requests.get(constants.FUNDER_INFO_API_URL.format(request.args['id']))
+            res = res.json()
+            if 'message' in res:
+                if 'name' in res['message']:
+                    return res['message']['name']
+    return ""
 
 
 def search_query(category, request):
@@ -140,8 +235,9 @@ def search_query(category, request):
     res = requests.get(url)
 
     if res.status_code == 200:
-        items, total = get_items(core.test_data.test_result)
-        #items, total = get_items(res.json())
+        # items, total = get_items(core.test_data.test_result)
+        # items, total = get_items(core.test_data.funder_result)
+        items, total = get_items(res.json())
         page_number = request.args.get(get_page_parameter(), type=int, default=1)
         pagination = Pagination(page=page_number, total=total, search=False, per_page=constants.ROWS_PER_PAGE,
                                 href=get_pagination_url(request))
@@ -150,6 +246,6 @@ def search_query(category, request):
                 'publisher_url': get_request_url(request, ['publisher']),
                 'sort_type': sort_type(request),
                 'api_url': constants.WORKS_API_URL,
-                'query': request.args['q']
+                'query': get_query_string(request, category)
                 }
         return items, page

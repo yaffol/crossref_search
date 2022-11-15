@@ -19,7 +19,36 @@ def works():
         page['name'] = constants.CATEGORY_WORKS
         return render_template("results.html", items=items, page=page)
 
-    return render_template("splash.html")
+    page = {'name': constants.CATEGORY_WORKS}
+    return render_template("splash.html", page=page)
+
+
+@search.route('/funders/<id>')
+def funder_search(id):
+    if request.args and request.args['q']:
+        items, page = service.search_query(constants.CATEGORY_FUNDERS, request)
+        page['name'] = constants.CATEGORY_FUNDERS
+        return render_template("results.html", items=items, page=page)
+
+    page = {'name': constants.CATEGORY_FUNDERS}
+    return render_template("funder_search.html", page=page)
+
+
+@search.route('/funders')
+def funders():
+    if request.args and 'q' in request.args:
+        items = service.search_query(constants.CATEGORY_FUNDERS, request)
+        return items
+
+    elif request.args and 'id' in request.args:
+        items, page = service.search_query(constants.CATEGORY_FUNDERS, request)
+        page['name'] = constants.CATEGORY_FUNDERS
+        page['menu'] = constants.SEARCH_MENU_CODE
+        return render_template("results.html", items=items, page=page)
+
+    page = {'name': constants.CATEGORY_FUNDERS,
+            'menu': constants.SEARCH_MENU_CODE}
+    return render_template("funder_search.html", page=page)
 
 
 @home.route('/')
@@ -27,8 +56,9 @@ def index():
     page = {'name': constants.CATEGORY_WORKS}
     return render_template("splash.html", page=page)
 
+
 @help.route('/works')
-def works_search_help():
+def works_help():
     page = {'name': constants.CATEGORY_WORKS}
     return render_template("search_help.html", page=page)
 

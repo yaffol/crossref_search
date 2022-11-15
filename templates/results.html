@@ -5,7 +5,13 @@
     {% include 'facets.html' %}
   </div>
   <div class="span9">
-    {% include 'include/search_header.html' %}
+    {% with page=page %}
+      {% if page.name == 'works' %}
+        {% include 'include/works_search_header.html' %}
+      {% elif page.name == 'funders' %}
+        {% include 'include/funders_search_header.html' %}
+      {% endif %}
+    {% endwith %}
     <div class="list-info">
       <div class="pull-right">
         <h6 class="number">

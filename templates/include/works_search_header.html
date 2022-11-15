@@ -83,52 +83,6 @@
 
 /*]]>*/</style>
 
-{% if page.branding and page.branding.search_typeahead == funder_name %}
-<script>
-
-    $(document).ready(function () {
-        var fundersRemote = new Bloodhound({
-            name: 'funders',
-            datumTokenizer: function (d) {
-                return d.tokens;
-            },
-            queryTokenizer: Bloodhound.tokenizers.whitespace,
-            remote: {
-                url: "#{page[:branding][:query_url]}" + '/funders?query=%QUERY',
-                filter: function (dataResponse) {
-                    return dataResponse.message.items;
-                }
-            },
-            limit: 16,
-            dupDetector: function (r, l) {
-                return false;
-            }
-        });
-
-        fundersRemote.initialize();
-
-        var suggestionLayout = Hogan.compile('<p>{{name}} <small>{{location}}</small></p>');
-
-        $('#search-input').typeahead(null, {
-            name: 'funders',
-            source: fundersRemote.ttAdapter(),
-            templates: {
-                suggestion: function (d) {
-                    return suggestionLayout.render(d)
-                }
-            },
-            limit: 16
-        });
-
-        $('#search-input').bind('typeahead:autocompleted typeahead:selected', function (e, datum) {
-            $('#fundref-input').val(datum['id']);
-            $('#fundref-form').submit();
-        });
-    });
-
-
-</script>
-{% endif %}
 <form id="search-form" method='GET' action="/search/works">
     <div class="search-in-header">
         <input id="search-input" class="input input-xlarge search-input"
