@@ -127,7 +127,7 @@ def add_grant_info(item, row):
         funders = []
         for funder in item['funder']:
             if 'name' in funder and 'award' in funder:
-                funders.append(funder['name']+" ("+",".join(funder['award'])+")")
+                funders.append(funder['name'] + " (" + ",".join(funder['award']) + ")")
         if len(funders) > 0:
             row['grant_info'] = " | ".join(funders)
 
@@ -247,3 +247,59 @@ def search_query(category, request):
                 'query': get_query_string(request, category)
                 }
         return items, page
+
+
+def resolve_references(citation_texts):
+    page = {}
+    if len(citation_texts) > constants.MAX_MATCH_TEXTS:
+        page = {"results": [],
+                "query_ok": False,
+                "reason": "Too many citations. Maximum is" + str(constants.MAX_MATCH_TEXTS)
+                }
+    else:
+        results = []
+        for citation_text in citation_texts:
+            if len(citation_text.split()) < constants.MIN_MATCH_TERMS:
+                results.append({
+                    "text": citation_text,
+                    "match": False,
+                    "reason": 'Too few terms',
+                })
+            else:
+                url = constants.WORKS_API_URL
+                url = furl.furl(url).add(args={'query': citation_text, 'rows': 1}).url
+                res = requests.get(url)
+                if res.status_code == 200:
+                    res = res.json()
+                    if 'message' in res:
+                        if 'items' in res['message']:
+                            if len(res['message']['items']) > 0:
+                                item = res['message']['items'][0]
+                                if item['score'] < constants.MIN_MATCH_SCORE:
+                                    results.append({
+                                        "text": citation_text,
+                                        "match": False,
+                                        "reason": 'Result score too low',
+                                    })
+                                else:
+                                    results.append({
+                                        "text": citation_text,
+                                        "match": True,
+                                        "doi": item['URL'],
+                                        "coins": "", #res['coins'],
+                                        "score": item['score']
+                                    })
+
+        page = {"results": results, "query_ok": True}
+
+    return page
+
+
+def search_references(request):
+    refs_text = request.form.get('references').strip()
+
+    if refs_text:
+        refs = [line for line in refs_text.split("\n") if line.strip() != '']
+        return resolve_references(refs)
+
+    return None

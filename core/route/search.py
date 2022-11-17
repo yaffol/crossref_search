@@ -23,17 +23,6 @@ def works():
     return render_template("splash.html", page=page)
 
 
-@search.route('/funders/<id>')
-def funder_search(id):
-    if request.args and request.args['q']:
-        items, page = service.search_query(constants.CATEGORY_FUNDERS, request)
-        page['name'] = constants.CATEGORY_FUNDERS
-        return render_template("results.html", items=items, page=page)
-
-    page = {'name': constants.CATEGORY_FUNDERS}
-    return render_template("funder_search.html", page=page)
-
-
 @search.route('/funders')
 def funders():
     if request.args and 'q' in request.args:
@@ -49,6 +38,18 @@ def funders():
     return render_template("funder_search.html", page=page)
 
 
+@search.route('/references', methods=['POST', 'GET'])
+def references():
+    if request.method == 'GET':
+        page = {'name': constants.CATEGORY_REFERENCES}
+        return render_template("references.html", page=page)
+    else:
+        page = service.search_references(request)
+        page['name'] = constants.CATEGORY_REFERENCES
+        return render_template("references_result.html", page=page)
+
+
+
 @home.route('/')
 def index():
     page = {'name': constants.CATEGORY_WORKS}
@@ -57,7 +58,7 @@ def index():
 
 @help.route('/works')
 def works_help():
-    page = {'name': constants.CATEGORY_WORKS}
+    page = {'name': constants.CATEGORY_HELP}
     return render_template("search_help.html", page=page)
 
 

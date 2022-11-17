@@ -6,8 +6,14 @@ FUNDER_WORKS_API_URL = BASE_API_URL + "funders/{0}/works"
 FUNDER_INFO_API_URL = BASE_API_URL + "funders/{0}"
 
 # Categories
+CATEGORY_HELP = "help"
 CATEGORY_WORKS = "works"
 CATEGORY_FUNDERS = "funders"
+CATEGORY_REFERENCES = "references"
 
 # Constant Values
 ROWS_PER_PAGE = 20
+
+MIN_MATCH_SCORE = 75
+MIN_MATCH_TERMS = 3
+MAX_MATCH_TEXTS = 1000
