@@ -41,7 +41,6 @@ h1 {
   $('#help-body').collapse('hide');
   $('#search-input').focus();
 });/*]]>*/</script>
-{% endif %}
 {% block search_content %}
 <!--<%= partial :search_header, :page => page.merge({:disable_search_box => true, :big_logo => true}) %>-->
 <div class="spacer" style="margin-top: 12em;"></div>
@@ -53,12 +52,6 @@ h1 {
       of
       journal articles, books, standards, datasets & more
     </span>
-<!--  <% elsif page[:branding][:header_links_profile] == :fundref %>-->
-<!--    <span style="font-size: 3em; line-height: 1em; color: #4f5858;">-->
-<!--      Search funders connected to-->
-<!--      published works with funding data-->
-<!--    </span>-->
-<!--  <% end %>-->
 </div>
 <div class="spacer" style="margin-top: 3em;"></div>
 <div class="row-centered">

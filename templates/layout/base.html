@@ -176,6 +176,27 @@
         line-height: 2em;
     }
 
+    .alert-error {
+        padding: 5px;
+        border-radius: 2px;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        border: 1px solid red;
+        background-color: white;
+        color: red;
+    }
+
+    .alert-info {
+        padding: 5px;
+        border-radius: 2px;
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        border: 1px solid green;
+        background-color: white;
+        color: green;
+    }
+
+
     /*]]>*/</style>
 </head>
 <body>
@@ -196,6 +217,17 @@
             </div>
         </div>
         {% endblock %}
+    </div>
+    <div class="row-centered">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class=flashes>
+            {% for category, message in messages %}
+            <div class="alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
     </div>
     <div id="content">{% block content %}{% endblock %}</div>
     <div id="footer">

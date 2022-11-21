@@ -5,7 +5,7 @@ import furl
 from flask_paginate import Pagination, get_page_parameter
 
 import core.utils as utils
-
+import core.exceptions as exceptions
 
 def sort_type(request):
     sort_by = 'relevance'
@@ -230,7 +230,10 @@ def get_query_string(request, category):
 
 def search_query(category, request):
     url = get_api_url(category, request)
-    res = requests.get(url)
+    try:
+        res = requests.get(url)
+    except Exception as e:
+        raise exceptions.APIConnectionException(e)
 
     if res.status_code == 200:
         # items, total = get_items(core.test_data.test_result)
