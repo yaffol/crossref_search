@@ -2,31 +2,13 @@
 <div class="simple-nav-outer">
     <div class="simple-nav smaller">
         <div class="pull-right">
-            <span class="sign-in-link" href="#" >
-                <img src="{{ url_for('static', filename='img/orcid_24x24.gif') }}">
-                Sign in
-            </span>
-            <script>
-                $(document).ready(function () {
-                    $('.sign-in-link').click(function (e) {
-                        $.oauthpopup({
-                            path: '/auth/orcid',
-                            callback: function () {
-                                document.location.reload(true);
-                            }
-                        });
-                        e.preventDefault();
-                        return false;
-                    });
-                });
-            </script>
-
+            {% include 'profile_link.html' %}
         </div>
-        <a href="/" class="{% if page.name == 'works' %}link-selected-fg{% endif %}">Works</a>
-        <a href="/search/funders" class="{% if page.name == 'funders' %}link-selected-fg{% endif %}">Funding Data</a>
-        <a href="/search/references" class="{% if page.name == 'references' %}link-selected-fg{% endif %}">Link References</a>
+        <a href="/" class="{% if page and page.name == 'works' %}link-selected-fg{% endif %}">Works</a>
+        <a href="/search/funders" class="{% if page and page.name == 'funders' %}link-selected-fg{% endif %}">Funding Data</a>
+        <a href="/search/references" class="{% if page and page.name == 'references' %}link-selected-fg{% endif %}">Link References</a>
 <!--        <a >Status</a>-->
         <a href="https://api.crossref.org">API</a>
-        <a href="/help/works" class="{% if page.name == 'help' %}link-selected-fg{% endif %}">Help</a>
+        <a href="/help/works" class="{% if page and page.name == 'help' %}link-selected-fg{% endif %}">Help</a>
     </div>
 </div>

@@ -1,3 +1,6 @@
+import os
+from core import utils
+
 # URLs
 BASE_API_URL = "http://api.crossref.org/"
 WORKS_API_URL = BASE_API_URL + "works"
@@ -23,4 +26,15 @@ MESSAGE_TYPE_INFO = "info"
 
 # Exceptions
 API_REQUEST_ERROR = "Could not able to connect to crossref API"
-UNKNOW_ERROR = "Unknown error occurred "
+UNKNOWN_ERROR = "Unknown error occurred "
+
+# ORCID Authentication
+ORCID_SITE = "https://api.orcid.org"
+ORCID_AUTHORIZE_URL = "https://orcid.org/oauth/authorize"
+ORCID_TOKEN_URL = "https://api.orcid.org/oauth/token"
+ORCID_REDIRECT_URL = utils.get_base_path() + "/auth/orcid/callback?token="
+
+# Session Constants
+ORCID = 'orcid'
+USER_TOKEN_ID = "user_token"
+ORCID_INFO = 'orcid_info'
