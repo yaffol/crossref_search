@@ -5,9 +5,17 @@
     </p>
     <p class="extra" style="margin-top: .5em;">
       <span>
-        <b>
+
+        {% if item.test_doi %}
+          <b style="color: rgb(207, 121, 121);">
+          Example Item
+          </b>
+        {% else %}
+          <b>
           {{ item.type }}
-        </b>
+          </b>
+        {% endif %}
+
         published
         <b>
           {{ item.published_date }}
@@ -89,13 +97,6 @@
       <p class="expand">
         Contributors: {{ item.contributors }}" %>
       </p>
-    {% endif %}
-    {% if item.supplementary_ids or item.type != 'standard' %}
-      {% if item.supplementary_ids %}
-        <p class="expand">
-          Other IDs: {{ item.supplementary_ids }}
-        </p>
-      {% endif %}
     {% endif %}
     {% include 'item_links.html' %}
   </td>

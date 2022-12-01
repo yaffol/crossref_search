@@ -1,5 +1,3 @@
-import os
-from core import utils
 
 # URLs
 BASE_API_URL = "http://api.crossref.org/"
@@ -16,6 +14,7 @@ CATEGORY_REFERENCES = "references"
 
 # Constant Values
 ROWS_PER_PAGE = 20
+MAX_ROWS = 1000
 
 MIN_MATCH_SCORE = 75
 MIN_MATCH_TERMS = 3
@@ -32,7 +31,7 @@ UNKNOWN_ERROR = "Unknown error occurred "
 ORCID_SITE = "https://api.orcid.org"
 ORCID_AUTHORIZE_URL = "https://orcid.org/oauth/authorize"
 ORCID_TOKEN_URL = "https://api.orcid.org/oauth/token"
-ORCID_REDIRECT_URL = utils.get_base_path() + "/auth/orcid/callback?token="
+ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 
 # Session Constants
 ORCID = 'orcid'

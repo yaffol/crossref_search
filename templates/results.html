@@ -30,9 +30,9 @@
             <b>relevance</b>
             <a href="{{ page.sort_url }}&sort=year">publication year</a>
           {% endif %}
-          {% if branding and branding.downloads.include and items %}
+          {% if page.name == 'funders' and items %}
             <span style="margin-left: 10em;">
-              <a href="<%= fundref_csv_link(page[:funder][:id]) %>">
+              <a href="/search/download_csv?id={{page.funder_id}}&format=csv">
                 <i class="icon-download-alt"></i>
                 Download as CSV
               </a>

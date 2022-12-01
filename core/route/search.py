@@ -1,4 +1,4 @@
-from flask import render_template, flash
+from flask import render_template, flash, Response
 from flask import Blueprint
 from flask import request
 import core.constants as constants
@@ -25,7 +25,7 @@ def works():
             flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
         except Exception as e:
             logger.error(e)
-            flash(constants.UNKNOW_ERROR, constants.MESSAGE_TYPE_ERROR)
+            flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
     page = {'name': constants.CATEGORY_WORKS}
     return render_template("splash.html", page=page)
@@ -48,10 +48,19 @@ def funders():
         flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
     except Exception as e:
         logger.error(e)
-        flash(constants.UNKNOW_ERROR, constants.MESSAGE_TYPE_ERROR)
+        flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
     page = {'name': constants.CATEGORY_FUNDERS}
     return render_template("funder_search.html", page=page)
+
+
+@search.route('/download_csv')
+def csv_download():
+    items = service.all_funders_data(constants.CATEGORY_FUNDERS, request)
+    csv_data = service.csv_data(items)
+    response = Response(csv_data, mimetype='text/csv')
+    response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+    return response
 
 
 @search.route('/references', methods=['POST', 'GET'])
@@ -69,7 +78,7 @@ def references():
             flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
         except Exception as e:
             logger.error(e)
-            flash(constants.UNKNOW_ERROR, constants.MESSAGE_TYPE_ERROR)
+            flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
 
 @home.route('/')

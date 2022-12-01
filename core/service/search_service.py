@@ -1,11 +1,13 @@
 import requests
 import core.constants as constants
 import calendar
+import csv
 import furl
 from flask_paginate import Pagination, get_page_parameter
 
 import core.utils as utils
 import core.exceptions as exceptions
+
 
 def sort_type(request):
     sort_by = 'relevance'
@@ -25,30 +27,36 @@ def get_api_url(category, request):
 
     url = None
     params = {}
+
+    sort_by = sort_type(request)
+    if sort_by == 'year':
+        sort_by = 'published'
+
     if category == constants.CATEGORY_WORKS:
         if 'q' in request.args:
             url = constants.WORKS_API_URL + "?query=" + request.args['q']
-
-        sort_by = sort_type(request)
-        if sort_by == 'year':
-            sort_by = 'published'
-        url += '&sort=' + sort_by
+            params['sort'] = sort_by
 
     elif category == constants.CATEGORY_FUNDERS:
         if 'q' in request.args:
             url = constants.FUNDERS_API_URL + "?query=" + request.args['q']
         elif 'id' in request.args:
             url = constants.FUNDER_WORKS_API_URL.format(request.args['id'])
+            params['sort'] = sort_by
+
+    rows = constants.ROWS_PER_PAGE
+    if 'format' in request.args:
+        rows = constants.MAX_ROWS
 
     if 'page' in request.args:
         page_value = int(request.args['page'])
-        offset = (page_value - 1) * constants.ROWS_PER_PAGE
+        offset = (page_value - 1) * rows
         params['offset'] = str(offset)
 
     if 'publisher' in request.args:
         params['query.container-title'] = request.args['publisher']
 
-    params['rows'] = str(constants.ROWS_PER_PAGE)
+    params['rows'] = str(rows)
 
     return furl.furl(url).add(params)
 
@@ -100,6 +108,7 @@ def add_published_date(item, row):
                 published_date += calendar.month_name[date_parts[1]] + " "
             if date_parts_len > 0:
                 published_date += str(date_parts[0])
+                row['year'] = str(date_parts[0])
 
             row['published_date'] = published_date
 
@@ -119,17 +128,32 @@ def add_alternative_id(item, row):
 def add_doi(item, row):
     if 'DOI' in item:
         row["display_doi"] = utils.get_doi_url(item['DOI'])
-        row["doi"] = item['DOI']
+        doi = item['DOI']
+        row["doi"] = doi
+
+        if doi.startswith('10.5555') or doi.startswith('10.55555'):
+            row["test_doi"] = True
+        else:
+            row["test_doi"] = False
 
 
 def add_grant_info(item, row):
     if 'funder' in item:
         funders = []
+        awards = []
+        funder_names = []
         for funder in item['funder']:
+            if 'name' in funder:
+                funder_names.append(funder['name'])
             if 'name' in funder and 'award' in funder:
+                awards.append(",".join(funder['award']))
                 funders.append(funder['name'] + " (" + ",".join(funder['award']) + ")")
         if len(funders) > 0:
             row['grant_info'] = " | ".join(funders)
+        if len(awards) > 0:
+            row['awards'] = ",".join(awards)
+        if len(funder_names) > 0:
+            row['funders'] = ",".join(funder_names)
 
 
 def add_names(items_list, item_name, row):
@@ -147,6 +171,7 @@ def add_names(items_list, item_name, row):
                 items.append(name)
         if len(items) > 0:
             row[item_name] = " | ".join(items)
+            row[item_name+'_csv'] = ",".join(items)
 
 
 def add_people(item, row):
@@ -249,6 +274,10 @@ def search_query(category, request):
                 'api_url': constants.WORKS_API_URL,
                 'query': get_query_string(request, category)
                 }
+
+        if category == constants.CATEGORY_FUNDERS and 'id' in request.args:
+            page['funder_id'] = request.args['id']
+
         return items, page
 
 
@@ -306,3 +335,54 @@ def search_references(request):
         return resolve_references(refs)
 
     return None
+
+
+def all_funders_data(category, request):
+    total_pages = 1
+    page = 1
+    all_items = []
+    while page <= total_pages:
+        url = get_api_url(category, request)
+        try:
+            res = requests.get(url)
+        except Exception as e:
+            raise exceptions.APIConnectionException(e)
+
+        if res.status_code == 200:
+            items, total = get_items(res.json())
+            total_pages = -(total // -constants.MAX_ROWS)
+
+            all_items += items
+
+            page += 1
+
+    return all_items
+
+
+class Line(object):
+    def __init__(self):
+        self._line = None
+
+    def write(self, line):
+        self._line = line
+
+    def read(self):
+        return self._line
+
+
+def csv_data(items):
+    fields = ['display_doi', 'type', 'year', 'title', 'publication', 'authors_csv', 'funders', 'awards']
+    line = Line()
+
+    writer = csv.DictWriter(line, fieldnames=fields, extrasaction='ignore')
+    writer.writerow({'display_doi': 'DOI', 'type': 'Type', 'year': 'Year', 'title': 'Title', 'publication': 'Publication',
+                     'authors_csv': 'Authors', 'funders': 'Funders', 'awards': 'Awards'})
+    yield line.read()
+    for item in items:
+        writer.writerow(item)
+        yield line.read()
+    # writer = csv.writer(line)
+    # for csv_line in data:
+    #     writer.writerow(csv_line)
+    #     yield line.read()
+    # return None

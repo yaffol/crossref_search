@@ -31,6 +31,7 @@ rootLogger.addHandler(consoleHandler)
 rootLogger.setLevel(logging.INFO)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('requests').setLevel(logging.ERROR)
+formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 
 
 app.register_blueprint(auth, url_prefix='/auth')

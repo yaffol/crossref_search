@@ -12,9 +12,11 @@ auth = Blueprint('auth', __name__)
 
 @auth.route("/orcid")
 def orcid():
+    utils.set_host_url(request.host_url)
     client = WebApplicationClient(utils.get_app_config('ORCID_CLIENT_ID'))
     url = client.prepare_request_uri(constants.ORCID_AUTHORIZE_URL,
-                                     redirect_uri=constants.ORCID_REDIRECT_URL + session[constants.USER_TOKEN_ID],
+                                     redirect_uri=utils.get_host_url() + constants.ORCID_REDIRECT_URL
+                                                  + session[constants.USER_TOKEN_ID],
                                      scope="/authenticate")
     return redirect(url)
 
@@ -30,7 +32,7 @@ def orcid_callback():
         data = 'client_id='+utils.get_app_config('ORCID_CLIENT_ID') +\
                '&client_secret='+utils.get_app_config('ORCID_CLIENT_SECRET') +\
                '&grant_type=authorization_code&' \
-               '&redirect_uri=' + constants.ORCID_REDIRECT_URL + request.args['token'] +\
+               '&redirect_uri=' + utils.get_host_url() + constants.ORCID_REDIRECT_URL + request.args['token'] +\
                '&code=' + request.args["code"]
 
         response = requests.post(constants.ORCID_TOKEN_URL, headers=headers, data=data, verify=False)
