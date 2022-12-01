@@ -13,10 +13,25 @@
       {% endif %}
     {% endwith %}
     <div class="list-info">
+      {% if page.pagination.page > 10 %}
+        <table><tbody><tr>
+          <td class="item-data">
+            <p class="lead">
+              This search is limited to 10 pages only. For more data, go to the API
+            </p>
+            <div class="item-links-outer">
+              <div class="item-links">
+                <a href="http://api.crossref.org">
+                  http://api.crossref.org/
+                </a>
+              </div>
+            </div>
+          </td></tr></tbody></table>
+      {% else %}
       <div class="pull-right">
         <h6 class="number">
           {% if page.pagination %}
-           Page {{ page.pagination.page }} of {{ page.pagination.total }} results
+           Page {{ page.pagination.page }} of {{ page.total }} results
           {% endif %}
         </h6>
       </div>
@@ -40,6 +55,7 @@
           {% endif %}
         </h6>
       </span>
+      {% endif %}
     </div>
     {% include 'item_list.html' %}
     <div class="item-paging bottom">

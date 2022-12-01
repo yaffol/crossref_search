@@ -261,11 +261,24 @@ def search_query(category, request):
         raise exceptions.APIConnectionException(e)
 
     if res.status_code == 200:
-        # items, total = get_items(core.test_data.test_result)
-        # items, total = get_items(core.test_data.funder_result)
-        items, total = get_items(res.json())
         page_number = request.args.get(get_page_parameter(), type=int, default=1)
-        pagination = Pagination(page=page_number, total=total, search=False, per_page=constants.ROWS_PER_PAGE,
+        max_results_to_display = constants.ROWS_PER_PAGE * 10
+
+        # If page is greater than 10, show max limit message
+        if int(page_number) > constants.PAGINATION_PAGE_LIMIT:
+            items = []
+            total = max_results_to_display + 1
+        else:
+            items, total = get_items(res.json())
+
+        total_rows = total
+        # Restrict the pages to 10. If the user tries to access the 11th page display
+        # a message regarding limitation
+
+        if total > max_results_to_display:
+            total_rows = max_results_to_display + 1
+        # set pagination max to 11 pages
+        pagination = Pagination(page=page_number, total=total_rows, search=False, per_page=constants.ROWS_PER_PAGE,
                                 href=get_pagination_url(request))
         page = {'pagination': pagination,
                 'sort_url': get_request_url(request, ['sort']),
@@ -274,6 +287,9 @@ def search_query(category, request):
                 'api_url': constants.WORKS_API_URL,
                 'query': get_query_string(request, category)
                 }
+
+        if int(page_number) <= constants.PAGINATION_PAGE_LIMIT:
+            page['total'] = str(total)
 
         if category == constants.CATEGORY_FUNDERS and 'id' in request.args:
             page['funder_id'] = request.args['id']
@@ -381,8 +397,3 @@ def csv_data(items):
     for item in items:
         writer.writerow(item)
         yield line.read()
-    # writer = csv.writer(line)
-    # for csv_line in data:
-    #     writer.writerow(csv_line)
-    #     yield line.read()
-    # return None

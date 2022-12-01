@@ -15,6 +15,7 @@ CATEGORY_REFERENCES = "references"
 # Constant Values
 ROWS_PER_PAGE = 20
 MAX_ROWS = 1000
+PAGINATION_PAGE_LIMIT = 10
 
 MIN_MATCH_SCORE = 75
 MIN_MATCH_TERMS = 3
@@ -37,3 +38,5 @@ ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 ORCID = 'orcid'
 USER_TOKEN_ID = "user_token"
 ORCID_INFO = 'orcid_info'
+
+# Messages
