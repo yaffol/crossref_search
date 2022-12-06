@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session
 from core.route.search import search, home, help
-from core.route.orcid_auth import auth
+from core.route.orcid_auth import auth, orcid
 import os
 import logging
 import logging.handlers
@@ -34,6 +34,7 @@ logging.getLogger('requests').setLevel(logging.ERROR)
 formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 
 
+app.register_blueprint(orcid, url_prefix='/orcid')
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(search, url_prefix='/search')
 app.register_blueprint(help, url_prefix='/help')

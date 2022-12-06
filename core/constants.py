@@ -29,9 +29,6 @@ API_REQUEST_ERROR = "Could not able to connect to crossref API"
 UNKNOWN_ERROR = "Unknown error occurred "
 
 # ORCID Authentication
-ORCID_SITE = "https://api.orcid.org"
-ORCID_AUTHORIZE_URL = "https://orcid.org/oauth/authorize"
-ORCID_TOKEN_URL = "https://api.orcid.org/oauth/token"
 ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 
 # Session Constants
