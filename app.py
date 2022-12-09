@@ -4,6 +4,7 @@ from core.route.orcid_auth import auth, orcid
 import os
 import logging
 import logging.handlers
+from flask_sqlalchemy import SQLAlchemy
 from core import utils, constants
 import settings
 
@@ -13,6 +14,8 @@ app = Flask(__name__)
 utils.set_base_path(app.root_path)
 app.config.from_object(settings)
 utils.set_app_config(app.config)
+
+# db = SQLAlchemy(app)
 
 
 # Logger configuration

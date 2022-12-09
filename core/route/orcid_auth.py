@@ -5,6 +5,7 @@ from flask import redirect, render_template, request, session, abort
 import requests
 import time
 import logging as logger
+import json
 from oauthlib.oauth2 import WebApplicationClient
 from core import constants, utils, exceptions
 from core.service import auth_service
@@ -59,6 +60,73 @@ def orcid_callback():
         abort(400)
 
 
+def extract_orcid_dois(account_info):
+    extracted_dois = []
+
+    headers = {
+        'Accept': 'application/vnd.orcid+json',
+        'Authorization': 'Bearer ' + account_info['access_token']
+    }
+
+    try:
+        response = requests.get(utils.get_app_config('ORCID_MEMBER_URL') + account_info['orcid'] + "/works",
+                                headers=headers, verify=False)
+    except Exception as e:
+        logging.exception(e)
+        raise exceptions.APIConnectionException(e)
+
+    if response.status_code == 200:
+        res_json = response.json()
+
+        if 'group' in res_json:
+            works = res_json['group']
+
+            for work_loc in works:
+                if 'external-ids' in work_loc:
+                    if 'external-id' in work_loc['external-ids']:
+                        ids_loc = work_loc['external-ids']['external-id']
+                        for id_loc in ids_loc:
+                            id_type = id_loc['external-id-type']
+                            id_val = id_loc['external-id-value']
+
+                            if id_type.upper() == 'DOI':
+                                extracted_dois.append(id_val)
+    else:
+        logger.error("API returns error. Status Code : " + str(response.status_code) + " - Message : " +
+                     response.text)
+
+    return extracted_dois
+
+
+def create_orcid_json_item(doi_record):
+    record = {
+        "title": {
+            "title": {
+                "value": doi_record['title'][0]
+            },
+            "subtitle": None,
+            "translated-title": None
+        },
+        "journal-title": {
+            "value": doi_record['container-title'][0]
+        },
+        "short-description": None,
+        "type": doi_record['type'],
+        "external-ids": {
+            "external-id": [{
+                "external-id-type": "doi",
+                "external-id-value": doi_record['DOI'],
+                "external-id-url": {
+                    "value": doi_record['URL']
+                },
+                "external-id-relationship": "self"
+            }]
+        }
+    }
+
+    return json.dumps(record)
+
+
 @orcid.route("/claim")
 def claim():
     status = None
@@ -68,42 +136,17 @@ def claim():
         doi = request.args['doi']
 
         if orcid_info:
-            orcid_uid = orcid_info['orcid']
-            access_token = orcid_info['access_token']
 
-            headers = {
-                'Accept': 'application/vnd.orcid+json',
-                'Authorization': 'Bearer ' + access_token
-            }
+            extracted_dois = extract_orcid_dois(orcid_info)
 
-            response = requests.get("https://pub.sandbox.orcid.org/v3.0/0000-0002-6730-2500/works",
-                                    headers=headers, verify=False)
-
-            if response.status_code == 200:
-                res_json = response.json()
-
-                extracted_dois = []
-
-                if 'group' in res_json:
-                    works = res_json['group']
-
-                    for work_loc in works:
-                        if 'external-ids' in work_loc:
-                            if 'external-id' in work_loc['external-ids']:
-                                ids_loc = work_loc['external-ids']['external-id']
-                                for id_loc in ids_loc:
-                                    id_type = id_loc['external-id-type']
-                                    id_val = id_loc['external-id-value']
-
-                                    if id_type.upper() == 'DOI':
-                                        extracted_dois.append(id_val)
-
-                orcid_info['dois'] = extracted_dois
-
+            if doi in extracted_dois:
+                status = 'ok'
+            else:
                 url = constants.WORKS_API_URL + "/" + doi
                 try:
                     res = requests.get(url)
                 except Exception as e:
+                    logging.exception(e)
                     raise exceptions.APIConnectionException(e)
 
                 if res.status_code == 200:
@@ -112,23 +155,56 @@ def claim():
                     if response_json["message"]:
                         doi_record = response_json["message"]
                     if doi_record:
-                        record = {
-                            'title': doi_record['title'],
+                        json_record = create_orcid_json_item(doi_record)
 
+                        headers = {
+                            'Accept': 'application/vnd.orcid+json',
+                            'Authorization': 'Bearer ' + orcid_info['access_token'],
+                            'Content - Type': 'application / vnd.orcid + json'
                         }
-                        headers['Content-Type': 'application/vnd.orcid+json']
-                        response = requests.post("https://pub.sandbox.orcid.org/v3.0/0000-0002-6730-2500/works",
-                                                 data=doi_record, headers=headers, verify=False)
-                        if response.status_code == 200:
-                            pass
+
+                        try:
+                            response = requests.post(utils.get_app_config('ORCID_MEMBER_URL') + "/works",
+                                                     data=json_record, headers=headers, verify=False)
+                        except Exception as e:
+                            logging.exception(e)
+                            raise exceptions.APIConnectionException(e)
+
+                        if response.status_code == 201:
+                            extracted_dois = extract_orcid_dois(orcid_info)
+                            if doi in extracted_dois:
+                                status = 'ok_visible'
+                            else:
+                                status = 'ok'
+                        elif response.status_code == 500:
+                            logging.error("Error while adding item : " + response.text)
+                            return {"status": "error", "text": "ORCID Serverside error. Item not added to ORCID"}
+                        else:
+                            logging.error("Error while adding item : " + response.text)
+                            return {"status": "error", "text": "Unknown error occurred. Item not added to ORCID"}
 
                     else:
                         status = 'no_such_doi'
                 else:
                     status = 'no_such_doi'
 
-            else:
-                logger.error("API returns error. Status Code : " + response.status_code + " - Message : " +
-                             response.text)
-
     return {"status": status}
+
+
+@orcid.route("/dois")
+def dois_info():
+    dois = request.args['dois']
+    signed_in, orcid_info = utils.signed_in_info()
+    extracted_dois = []
+    dois_status = {}
+    if signed_in:
+        dois_list = dois.split(",")
+        if orcid_info:
+            extracted_dois = extract_orcid_dois(orcid_info)
+            for doi in dois_list:
+                if doi in extracted_dois:
+                    dois_status[doi] = "claimed"
+                else:
+                    dois_status[doi] = "not_claimed"
+
+    return json.dumps(dois_status)
