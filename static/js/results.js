@@ -274,7 +274,6 @@
         data: {dois: dois_list },
         success: function(data) {
           $.each($.parseJSON(data), function (key, value) {
-                console.log(key)
                 var doi_element = $(document.getElementById(key));
                 doi_element.unbind('click')
                 doi_element.css("visibility", "visible")

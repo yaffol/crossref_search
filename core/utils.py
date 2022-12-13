@@ -1,4 +1,5 @@
 from flask import session
+import uuid
 import time
 import core.constants as constants
 from core.service import auth_service
@@ -28,9 +29,14 @@ def signed_in_info():
                 return True, orcid_info
 
     else:
-        session[constants.USER_TOKEN_ID] = "12345678912345"
+        session[constants.USER_TOKEN_ID] = str(uuid.uuid4())
 
     return False, None
+
+
+def logout():
+    if constants.USER_TOKEN_ID in session:
+        del session[constants.USER_TOKEN_ID]
 
 
 def set_app_config(app_config):
@@ -60,3 +66,4 @@ def set_host_url(host_url):
 
 def get_host_url():
     return HOST_URL
+

@@ -1,21 +1,30 @@
 from flask import Flask, render_template, session
-from core.route.search import search, home, help
-from core.route.orcid_auth import auth, orcid
+from core.route import blueprints
 import os
-import logging
+from flask_cors import CORS
 import logging.handlers
-from flask_sqlalchemy import SQLAlchemy
-from core import utils, constants
+from core.database import db
+from flask_migrate import Migrate
+from core import utils
 import settings
+
 
 # Create APP
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors_config = {
+  "origins": ["http://assets.crossref.org"]
+}
+CORS(app, resources={r"/*": cors_config})
 
 utils.set_base_path(app.root_path)
 app.config.from_object(settings)
 utils.set_app_config(app.config)
 
-# db = SQLAlchemy(app)
+blueprints.register_blueprints(app)
+
+db.init_app(app)
+migrate = Migrate(app, db)
 
 
 # Logger configuration
@@ -35,13 +44,6 @@ rootLogger.setLevel(logging.INFO)
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 logging.getLogger('requests').setLevel(logging.ERROR)
 formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
-
-
-app.register_blueprint(orcid, url_prefix='/orcid')
-app.register_blueprint(auth, url_prefix='/auth')
-app.register_blueprint(search, url_prefix='/search')
-app.register_blueprint(help, url_prefix='/help')
-app.register_blueprint(home, url_prefix='/')
 
 
 @app.errorhandler(400)
@@ -74,4 +76,5 @@ def user_info():
     return context_dict
 
 
-app.run(host='0.0.0.0', port=5050)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5050)

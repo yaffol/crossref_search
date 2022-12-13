@@ -387,6 +387,11 @@ class Line(object):
 
 
 def csv_data(items):
+    """
+    Writes data to CSV format
+    :param items: data
+    :return:
+    """
     fields = ['display_doi', 'type', 'year', 'title', 'publication', 'authors_csv', 'funders', 'awards']
     line = Line()
 
