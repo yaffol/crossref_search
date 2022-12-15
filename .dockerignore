@@ -1,1 +1,5 @@
-**/postgres-data
+data/
+logs/
+.git
+*.md
+.cache
