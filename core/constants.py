@@ -23,6 +23,7 @@ MAX_MATCH_TEXTS = 1000
 
 MESSAGE_TYPE_ERROR = "error"
 MESSAGE_TYPE_INFO = "info"
+MESSAGE_TYPE_WARN = "warn"
 
 # Exceptions
 API_REQUEST_ERROR = "Could not able to connect to crossref API"
@@ -37,3 +38,4 @@ USER_TOKEN_ID = "user_token"
 ORCID_INFO = 'orcid_info'
 
 # Messages
+ORCID_SESSION_EXPIRED = "You have been signed out of ORCID"

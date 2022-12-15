@@ -3,45 +3,11 @@
 <img src="//assets.crossref.org/logo/crossref-logo-landscape-100.png">
 {% endblock %}
 
+{% block styles %}
+<link href="{{ url_for('static', filename='css/results.css') }}" media="screen" rel="stylesheet" type="text/css" >
+{% endblock styles %}
+
 {% block content %}
-<style>
-
-  .item-paging {
-    text-align: center;
-    margin-top: 1em;
-  }
-  .list-info {
-     margin-bottom: 2em;
-     background-color: #f8f8f8;
-     padding: 1em;
-     margin-bottom: 1em;
-  }
-  .gap {
-    display: none;
-  }
-
-  .nav-list > .active > a {
-    background-color: rgb(56, 166, 203);
-  }
-
-  .nav-list > .active > a:hover {
-    background-color: rgb(6, 116, 153);
-  }
-
-  .footer {
-    margin-bottom: 10px;
-  }
-
-  h6 b, h6 a {
-    font-size: 1.2em;
-    line-height: 1.3em;
-    margin-left: 0.3em;
-  }
-
-  h6 b {
-    color: black;
-  }
-</style>
 {% block results_content %}
 {% endblock %}
 <hr/>

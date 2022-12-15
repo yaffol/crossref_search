@@ -1,3 +1,6 @@
+
+import logging
+
 import requests
 import core.constants as constants
 import calendar
@@ -256,7 +259,9 @@ def get_query_string(request, category):
 def search_query(category, request):
     url = get_api_url(category, request)
     try:
+        logging.debug("Search URL : " + str(url))
         res = requests.get(url)
+        logging.debug("Response Code : " + str(res.status_code))
     except Exception as e:
         raise exceptions.APIConnectionException(e)
 
@@ -295,6 +300,11 @@ def search_query(category, request):
             page['funder_id'] = request.args['id']
 
         return items, page
+
+    else:
+        logging.error("Error while getting the results: Response Code: " + str(res.status_code) + " Description: "
+                      + res.text)
+        raise exceptions.APIConnectionException()
 
 
 def resolve_references(citation_texts):

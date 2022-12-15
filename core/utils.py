@@ -1,4 +1,4 @@
-from flask import session
+from flask import session, flash
 import uuid
 import time
 import core.constants as constants
@@ -17,21 +17,23 @@ def get_doi_url(doi):
 def signed_in_info():
     """
     Checks if the user is signed in and returns user info
-    :return: True and user info if signed in else False and None
+    :return: True, user info if signed in else False and None. True if session expired
     """
     if constants.USER_TOKEN_ID in session:
         orcid_info = auth_service.get_orcid_info(session[constants.USER_TOKEN_ID])
         if orcid_info:
             time_now = time.time()
             if orcid_info['expires_at'] <= time_now:
-                return False, None
+                logout()
+                # returns signed_in, orcid_info and expired
+                return False, None, True
             else:
-                return True, orcid_info
+                return True, orcid_info, False
 
     else:
         session[constants.USER_TOKEN_ID] = str(uuid.uuid4())
 
-    return False, None
+    return False, None, False
 
 
 def logout():
@@ -66,4 +68,3 @@ def set_host_url(host_url):
 
 def get_host_url():
     return HOST_URL
-

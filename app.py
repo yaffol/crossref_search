@@ -1,11 +1,11 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, flash
 from core.route import blueprints
 import os
 from flask_cors import CORS
 import logging.handlers
 from core.database import db
 from flask_migrate import Migrate
-from core import utils
+from core import utils, constants
 import settings
 
 
@@ -31,7 +31,7 @@ migrate = Migrate(app, db)
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger(__name__)
 
-fileHandler = logging.handlers.RotatingFileHandler(os.path.join(app.root_path, "app.log"),
+fileHandler = logging.handlers.RotatingFileHandler(os.path.join(app.root_path, "logs", "app.log"),
                                                    maxBytes=(1048576*5), backupCount=5)
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
@@ -71,10 +71,12 @@ def error_500(e):
 
 @app.context_processor
 def user_info():
-    signed_in, info = utils.signed_in_info()
+    signed_in, info, session_expired = utils.signed_in_info()
     context_dict = {'signed_in': signed_in, 'orcid_info':info}
+    if session_expired:
+        flash(constants.ORCID_SESSION_EXPIRED, constants.MESSAGE_TYPE_WARN)
     return context_dict
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5050)
+    app.run(host='0.0.0.0', port=os.environ.get("PORT", 5000), debug=os.environ.get("DEBUG", False))

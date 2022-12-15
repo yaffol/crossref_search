@@ -21,10 +21,10 @@ def works():
             page['name'] = constants.CATEGORY_WORKS
             return render_template("results.html", items=items, page=page)
         except exceptions.APIConnectionException as e:
-            logger.error(e)
+            logger.exception(e)
             flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
             flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
     page = {'name': constants.CATEGORY_WORKS}
@@ -44,10 +44,10 @@ def funders():
             return render_template("results.html", items=items, page=page)
 
     except exceptions.APIConnectionException as e:
-        logger.error(e)
+        logger.exception(e)
         flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
     except Exception as e:
-        logger.error(e)
+        logger.exception(e)
         flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
     page = {'name': constants.CATEGORY_FUNDERS}
@@ -74,10 +74,10 @@ def references():
             page['name'] = constants.CATEGORY_REFERENCES
             return render_template("references_result.html", page=page)
         except exceptions.APIConnectionException as e:
-            logger.error(e)
+            logger.exception(e)
             flash(constants.API_REQUEST_ERROR, constants.MESSAGE_TYPE_ERROR)
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
             flash(constants.UNKNOWN_ERROR, constants.MESSAGE_TYPE_ERROR)
 
 

@@ -1,9 +1,9 @@
 import os
 import dotenv
 
-dotenv.load_dotenv()
+dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "config", ".env"))
 
-SECRET_KEY = b'_5#y2L"F4Q8z\n\xec]/'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 

@@ -1,0 +1,33 @@
+version: '3.6'
+
+services:
+  crossref-search:
+    build: .
+    depends_on:
+      - crossref-db
+    environment:
+      STAGE: test
+    ports:
+      - 5050:5000
+    volumes:
+      - ./config:/code/config
+      - ./logs:/code/logs
+    restart: always
+    network_mode: bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  crossref-db:
+    environment:
+      POSTGRES_USER: crossref
+      POSTGRES_PASSWORD: crossref
+      POSTGRES_DB: crossref_search
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    restart: always
+    network_mode: bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

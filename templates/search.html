@@ -1,51 +1,18 @@
 {% extends "layout/base.html" %}
+{% block styles %}
+<link href="{{ url_for('static', filename='css/search.css') }}" media="screen" rel="stylesheet" type="text/css">
+{% endblock styles %}
 {% block content %}
-<style>/*<![CDATA[*/.cr-red {
-  color: rgb(192, 70, 62);
-}
-.search {
-  margin-top: 2em;
-  position: relative;
-}
-.search i {
-  position: absolute;
-  top: 0.25em;
-  left: 0.3em;
-  font-size: 2.8em;
-  color: #aaa;
-}
-.search input {
-  padding-left: 1.5em;
-  line-height: 1.2em;
-  height: 1.4em;
-  font-size: 2.5em;
-  width: 20em;
-}
-h1 {
-  font-size: 4em;
-  line-height: 1.2em;
-}
-.row-centered {
-  margin: 0 auto;
-  width: 700px;
-}
-#help-accordion {
-  margin-top: 2em;
-  margin-left: 4px;
-}
-.break-below {
-  margin-bottom: 6em;
-}/*]]>*/</style>
 
 <script>/*<![CDATA[*/$(document).ready(function() {
   $('#help-body').collapse('hide');
   $('#search-input').focus();
-});/*]]>*/</script>
+});/*]]>*/
+</script>
 {% block search_content %}
 <!--<%= partial :search_header, :page => page.merge({:disable_search_box => true, :big_logo => true}) %>-->
 <div class="spacer" style="margin-top: 12em;"></div>
 <div class="row-centered">
-<!--  <% if page[:branding][:header_links_profile] == :crmds %>-->
     <span style="font-size: 3em; line-height: 1em; color: #4f5858;">
       Search the metadata
       <br/>
