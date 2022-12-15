@@ -248,7 +248,8 @@ def get_query_string(request, category):
 
     elif category == constants.CATEGORY_FUNDERS:
         if 'id' in request.args:
-            res = requests.get(constants.FUNDER_INFO_API_URL.format(request.args['id']))
+            res = requests.get(constants.FUNDER_INFO_API_URL.format(request.args['id']),
+                               timeout=constants.REQUEST_TIME_OUT)
             res = res.json()
             if 'message' in res:
                 if 'name' in res['message']:
@@ -260,7 +261,7 @@ def search_query(category, request):
     url = get_api_url(category, request)
     try:
         logging.debug("Search URL : " + str(url))
-        res = requests.get(url)
+        res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
         logging.debug("Response Code : " + str(res.status_code))
     except Exception as e:
         raise exceptions.APIConnectionException(e)
@@ -326,7 +327,7 @@ def resolve_references(citation_texts):
             else:
                 url = constants.WORKS_API_URL
                 url = furl.furl(url).add(args={'query': citation_text, 'rows': 1}).url
-                res = requests.get(url)
+                res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
                 if res.status_code == 200:
                     res = res.json()
                     if 'message' in res:
@@ -370,7 +371,7 @@ def all_funders_data(category, request):
     while page <= total_pages:
         url = get_api_url(category, request)
         try:
-            res = requests.get(url)
+            res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
         except Exception as e:
             raise exceptions.APIConnectionException(e)
 

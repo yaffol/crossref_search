@@ -165,7 +165,7 @@ def claim():
             else:
                 url = constants.WORKS_API_URL + "/" + doi
                 try:
-                    res = requests.get(url)
+                    res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
                 except Exception as e:
                     logging.exception(e)
                     raise exceptions.APIConnectionException(e)
