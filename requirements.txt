@@ -6,6 +6,6 @@ Flask-SQLAlchemy==3.0.2
 flask_paginate==2022.1.8
 furl==2.1.2
 oauthlib==3.2.1
-psycopg2==2.9.4
+psycopg2-binary==2.9.5
 python-dotenv==0.21.0
 requests==2.28.1
