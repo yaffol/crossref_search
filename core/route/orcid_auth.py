@@ -151,7 +151,7 @@ def claim():
     :return:
     """
     status = None
-    signed_in, orcid_info = utils.signed_in_info()
+    signed_in, orcid_info, session_expired = utils.signed_in_info()
 
     if signed_in and 'doi' in request.args:
         doi = request.args['doi']
@@ -220,7 +220,7 @@ def dois_info():
     :return: dictionary of dois along with status if claimed
     """
     dois = request.args['dois']
-    signed_in, orcid_info = utils.signed_in_info()
+    signed_in, orcid_info, session_expired = utils.signed_in_info()
 
     dois_status = {}
     if signed_in:
