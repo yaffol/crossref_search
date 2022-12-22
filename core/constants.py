@@ -28,7 +28,7 @@ MESSAGE_TYPE_INFO = "info"
 MESSAGE_TYPE_WARN = "warn"
 
 # Exceptions
-API_REQUEST_ERROR = "Could not able to connect to crossref API"
+API_REQUEST_ERROR = "Could not connect to Crossref REST API"
 UNKNOWN_ERROR = "Unknown error occurred "
 
 # ORCID Authentication
