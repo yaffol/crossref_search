@@ -2,13 +2,13 @@
 <div class="item-links-outer">
   <div class="item-links">
     {% if item.citations %}
-      <a href="javascript:showCitationsBox('<%= item.hashed %>');">
+      <a href="javascript:showCitationsBox('{{ item.hashed }}');">
         <i class="icon-resize-small"></i>
          {{ item.citations.count }}
         citations from patents
       </a>
     {% endif %}
-    <a href="<%= item.display_doi %>">
+    <a href="{{ item.display_doi }}">
       <i class="icon-external-link"></i>
       {{ item.display_doi }}
     </a>

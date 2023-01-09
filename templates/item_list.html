@@ -44,7 +44,7 @@ var dois_list = '{% for item in items %}{{ item.doi }},{% endfor %}'
   {% endif %}
   {% if signed_in and not item.user_claimed %}
     <div class="modal hide" id="claim-{{item.hashed}}">
-      <div class="doi" id="doi-<%= item.hashed %>" style="display: none;">
+      <div class="doi" id="doi-{{ item.hashed }}" style="display: none;">
         {{ item.doi }}
       </div>
       <div class="modal-header">

@@ -1,5 +1,6 @@
 
 import logging
+import re
 
 import requests
 import core.constants as constants
@@ -35,10 +36,20 @@ def get_api_url(category, request):
     if sort_by == 'year':
         sort_by = 'published'
 
+    rows = constants.ROWS_PER_PAGE
+    if 'format' in request.args:
+        rows = constants.MAX_ROWS
+
     if category == constants.CATEGORY_WORKS:
         if 'q' in request.args:
-            url = constants.WORKS_API_URL + "?query=" + request.args['q']
-            params['sort'] = sort_by
+            query = request.args['q']
+            doi_regex = re.compile(constants.DOI, re.IGNORECASE)
+            if doi_regex.match(query):
+                url = constants.WORKS_API_URL + "/" + request.args['q']
+            else:
+                url = constants.WORKS_API_URL + "?query=" + request.args['q']
+                params['sort'] = sort_by
+                params['rows'] = str(rows)
 
     elif category == constants.CATEGORY_FUNDERS:
         if 'q' in request.args:
@@ -46,10 +57,7 @@ def get_api_url(category, request):
         elif 'id' in request.args:
             url = constants.FUNDER_WORKS_API_URL.format(request.args['id'])
             params['sort'] = sort_by
-
-    rows = constants.ROWS_PER_PAGE
-    if 'format' in request.args:
-        rows = constants.MAX_ROWS
+        params['rows'] = str(rows)
 
     if 'page' in request.args:
         page_value = int(request.args['page'])
@@ -58,8 +66,6 @@ def get_api_url(category, request):
 
     if 'publisher' in request.args:
         params['query.container-title'] = request.args['publisher']
-
-    params['rows'] = str(rows)
 
     return furl.furl(url).add(params)
 
@@ -215,28 +221,37 @@ def add_type(item, row):
         row['type'] = item_type.replace('-', ' ').upper()
 
 
+def add_item_data(item, row):
+    add_type(item, row)
+    add_published_date(item, row)
+    add_publication(item, row)
+    add_alternative_id(item, row)
+    add_title(item, row)
+    add_name(item, row)
+    add_id(item, row)
+    add_location(item, row)
+    add_doi(item, row)
+    add_grant_info(item, row)
+    add_people(item, row)
+    add_supplementary_id(item, row)
+
+
 def get_items(obj):
     items = []
     total = 0
-    if obj["message"]["total-results"]:
-        total = obj["message"]["total-results"]
-    if obj["message"]["items"]:
-        for item in obj["message"]["items"]:
-            row = {}
-            add_type(item, row)
-            add_published_date(item, row)
-            add_publication(item, row)
-            add_alternative_id(item, row)
-            add_title(item, row)
-            add_name(item, row)
-            add_id(item, row)
-            add_location(item, row)
-            add_doi(item, row)
-            add_grant_info(item, row)
-            add_people(item, row)
-            add_supplementary_id(item, row)
-
-            items.append(row)
+    if obj['message-type'] == 'funder-list' or obj['message-type'] == 'work-list':
+        if obj["message"]["total-results"]:
+            total = obj["message"]["total-results"]
+        if obj["message"]["items"]:
+            for item in obj["message"]["items"]:
+                row = {}
+                add_item_data(item, row)
+                items.append(row)
+    elif obj['message-type'] == 'funder' or obj['message-type'] == 'work':
+        item = obj["message"]
+        row = {}
+        add_item_data(item, row)
+        items.append(row)
 
     return items, total
 

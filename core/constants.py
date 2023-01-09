@@ -41,3 +41,7 @@ ORCID_INFO = 'orcid_info'
 
 # Messages
 ORCID_SESSION_EXPIRED = "You have been signed out of ORCID"
+
+# Regex
+DOI = r"(?P<id>10\.\S+/\S+)$"
+
