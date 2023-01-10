@@ -15,6 +15,8 @@ help = Blueprint('help', __name__)
 
 @search.route('/works')
 def works():
+    if request.args and 'from_ui' not in request.args:
+        return index()
     if request.args and 'q' in request.args:
         try:
             items, page = service.search_query(constants.CATEGORY_WORKS, request)
@@ -34,6 +36,8 @@ def works():
 @search.route('/funders')
 def funders():
     try:
+        if request.args and 'from_ui' not in request.args:
+            return index()
         if request.args and 'q' in request.args:
             items = service.search_query(constants.CATEGORY_FUNDERS, request)
             return items

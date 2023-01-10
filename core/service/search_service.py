@@ -1,6 +1,5 @@
 
 import logging
-import re
 
 import requests
 import core.constants as constants
@@ -31,6 +30,7 @@ def get_api_url(category, request):
 
     url = None
     params = {}
+    search_type = None
 
     sort_by = sort_type(request)
     if sort_by == 'year':
@@ -42,12 +42,16 @@ def get_api_url(category, request):
 
     if category == constants.CATEGORY_WORKS:
         if 'q' in request.args:
-            query = request.args['q']
-            doi_regex = re.compile(constants.DOI, re.IGNORECASE)
-            if doi_regex.match(query):
-                url = constants.WORKS_API_URL + "/" + request.args['q']
+            query = request.args['q'].strip()
+
+            if constants.DOI_REGEX.match(query):
+                url = constants.WORKS_API_URL + "/" + query
+                search_type = constants.SEARCH_TYPE_DOI
+            elif constants.ISSN_REGEX.match(query):
+                url = constants.JOURNALS_API_URL.format(query)
+                search_type = constants.SEARCH_TYPE_ISSN
             else:
-                url = constants.WORKS_API_URL + "?query=" + request.args['q']
+                url = constants.WORKS_API_URL + "?query=" + query
                 params['sort'] = sort_by
                 params['rows'] = str(rows)
 
@@ -67,7 +71,7 @@ def get_api_url(category, request):
     if 'publisher' in request.args:
         params['query.container-title'] = request.args['publisher']
 
-    return furl.furl(url).add(params)
+    return furl.furl(url).add(params), search_type
 
 
 def get_request_url(request, exclude):
@@ -273,7 +277,7 @@ def get_query_string(request, category):
 
 
 def search_query(category, request):
-    url = get_api_url(category, request)
+    url, search_type = get_api_url(category, request)
     try:
         logging.debug("Search URL : " + str(url))
         res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
@@ -306,7 +310,8 @@ def search_query(category, request):
                 'publisher_url': get_request_url(request, ['publisher']),
                 'sort_type': sort_type(request),
                 'api_url': constants.WORKS_API_URL,
-                'query': get_query_string(request, category)
+                'query': get_query_string(request, category),
+                'search_type': search_type
                 }
 
         if int(page_number) <= constants.PAGINATION_PAGE_LIMIT:
@@ -384,7 +389,7 @@ def all_funders_data(category, request):
     page = 1
     all_items = []
     while page <= total_pages:
-        url = get_api_url(category, request)
+        url, search_type = get_api_url(category, request)
         try:
             res = requests.get(url, timeout=constants.REQUEST_TIME_OUT)
         except Exception as e:

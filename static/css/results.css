@@ -206,3 +206,9 @@
   .btn-container button i {
     margin-right: 0.4em;
   }
+  .search-box {
+    padding: 0 .6em;
+  }
+  .search-info {
+    padding: .3em 0;
+  }
