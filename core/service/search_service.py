@@ -256,6 +256,7 @@ def get_items(obj):
         row = {}
         add_item_data(item, row)
         items.append(row)
+        total = 1
 
     return items, total
 
