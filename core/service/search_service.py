@@ -50,6 +50,9 @@ def get_api_url(category, request):
             elif constants.ISSN_REGEX.match(query):
                 url = constants.JOURNALS_API_URL.format(query)
                 search_type = constants.SEARCH_TYPE_ISSN
+            elif constants.ORCID_REGEX.match(query):
+                url = constants.BASE_API_URL + "works?filter=orcid:{" + query + "}"
+                search_type = constants.SEARCH_TYPE_ORCID
             else:
                 url = constants.WORKS_API_URL + "?query=" + query
                 params['sort'] = sort_by
