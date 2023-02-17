@@ -1,0 +1,83 @@
+<script>
+var dois_list = '{% for item in items %}{{ item.doi }},{% endfor %}'
+</script>
+<table>
+    {% for item in items %}
+    {% include 'item.html' %}
+    {% endfor %}
+</table>
+{% for item in items %}
+  {% if item.citations %}
+    <div class="modal hide" id="citations-{{item.hashed}}">
+      <div class="modal-header">
+        <button class="close" data-dismiss="modal" type="button">&times;</button>
+        <h3>
+          Patent citations for
+          {{item.doi}}
+        </h3>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Title</th>
+          </tr>
+          {%  for citation in item.citations %}
+            <tr>
+              <td>
+                {{citation.id}}
+              </td>
+              <td>
+                {{citation.type}} {{citation.authority}}
+              </td>
+              <td>
+                <a href=" {{citation.url}} ">
+                  {{citation.title}}
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  {% endif %}
+  {% if signed_in and not item.user_claimed %}
+    <div class="modal hide" id="claim-{{item.hashed}}">
+      <div class="doi" id="doi-{{ item.hashed }}" style="display: none;">
+        {{ item.doi }}
+      </div>
+      <div class="modal-header">
+        <button class="close" data-dismiss="modal" type="button">&times;</button>
+        <h3>
+          Add
+          {{ item.doi }}
+          to your ORCID record
+        </h3>
+      </div>
+      <div class="modal-body">
+        <p>
+          You are adding
+          <b>
+            {{ item.coins_atitle }}
+          </b>
+          to your ORCID record. Double check that you were a
+          contributor to this work.
+        </p>
+        <p>Add this work to your ORCID record?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" type="button">No, thanks</button>
+        <button class="btn btn-primary" id="claim-button-{{ item.hashed }}">Yes, do it</button>
+      </div>
+    </div>
+  {% endif %}
+{% endfor %}
+<script>
+
+  function showCitationsBox(hashed) {
+    $('#citations-' + hashed).modal();
+  }
+
+
+</script>

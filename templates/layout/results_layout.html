@@ -1,0 +1,22 @@
+{% extends "layout/base.html" %}
+{% block header_image %}
+<img src="//assets.crossref.org/logo/crossref-logo-landscape-100.png">
+{% endblock %}
+
+{% block styles %}
+<link href="{{ url_for('static', filename='css/results.css') }}" media="screen" rel="stylesheet" type="text/css" >
+{% endblock styles %}
+
+{% block content %}
+{% block results_content %}
+{% endblock %}
+<hr/>
+<div class="footer">
+  {% if branding and branding.footer_links_profile == 'chorus' %}
+    <a href="http://chorusaccess.org/contact-us">Leave feedback</a>
+  {% else %}
+    Feedback:
+    <a href="mailto:support@crossref.org">support@crossref.org</a>
+  {% endif %}
+</div>
+{% endblock %}
