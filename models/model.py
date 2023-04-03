@@ -9,5 +9,3 @@ class OrcidUser(db.Model):
     session_token = db.Column(db.String())
     orcid_id = db.Column(db.String())
     orcid_info = db.Column(JSON)
-    time_created = db.Column(DateTime(timezone=True), server_default=func.now())
-    time_updated = db.Column(DateTime(timezone=True), onupdate=func.now())
