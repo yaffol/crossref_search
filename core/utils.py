@@ -38,6 +38,7 @@ def signed_in_info():
 
 def logout():
     if constants.USER_TOKEN_ID in session:
+        auth_service.remove_user_info(session[constants.USER_TOKEN_ID])
         del session[constants.USER_TOKEN_ID]
 
 

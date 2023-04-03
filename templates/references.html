@@ -19,6 +19,7 @@
         reference numbering.
       </p>
       <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <textarea name="references" rows="30" style="width:100%; padding:0;"></textarea>
         <div style="margin-bottom: 30px">
           <div class="pull-right">

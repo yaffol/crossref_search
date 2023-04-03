@@ -1,3 +1,4 @@
+import logging
 from models.model import OrcidUser
 from core.database import db
 
@@ -32,3 +33,15 @@ def get_orcid_info(token):
         return user.orcid_info
     else:
         return None
+
+
+def remove_user_info(token):
+    """
+    Remove user info from database
+    :param token: user token
+    :return:
+    """
+    try:
+        OrcidUser.query.filter_by(session_token=token).delete()
+    except Exception as exp:
+        logging.exception("Error while deleting user info")

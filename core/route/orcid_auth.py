@@ -102,7 +102,7 @@ def extract_orcid_dois(account_info):
                             id_val = id_loc['external-id-value']
 
                             if id_type.upper() == 'DOI':
-                                extracted_dois.append(id_val)
+                                extracted_dois.append(id_val.casefold())
     else:
         logging.error("API returns error. Status Code : " + str(response.status_code) + " - Message : " +
                      response.text)
@@ -160,7 +160,7 @@ def claim():
 
             extracted_dois = extract_orcid_dois(orcid_info)
 
-            if doi in extracted_dois:
+            if doi.casefold() in extracted_dois:
                 status = 'ok'
             else:
                 url = constants.WORKS_API_URL + "/" + doi
@@ -194,7 +194,7 @@ def claim():
 
                         if response.status_code == 201:
                             extracted_dois = extract_orcid_dois(orcid_info)
-                            if doi in extracted_dois:
+                            if doi.casefold() in extracted_dois:
                                 status = 'ok_visible'
                             else:
                                 status = 'ok'
@@ -228,7 +228,7 @@ def dois_info():
         if orcid_info:
             extracted_dois = extract_orcid_dois(orcid_info)
             for doi in dois_list:
-                if doi in extracted_dois:
+                if doi.casefold() in extracted_dois:
                     dois_status[doi] = "claimed"
                 else:
                     dois_status[doi] = "not_claimed"

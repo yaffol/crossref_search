@@ -1,4 +1,5 @@
 from flask import Flask, render_template, flash
+from flask_wtf.csrf import CSRFProtect
 from core.route import blueprints
 import os
 from flask_cors import CORS
@@ -11,9 +12,11 @@ import settings
 
 # Create APP
 app = Flask(__name__)
+csrf = CSRFProtect(app)
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 cors_config = {
-  "origins": ["http://assets.crossref.org"]
+  "origins": ["https://assets.crossref.org"]
 }
 CORS(app, resources={r"/*": cors_config})
 
@@ -31,10 +34,10 @@ migrate = Migrate(app, db)
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 rootLogger = logging.getLogger(__name__)
 
-fileHandler = logging.handlers.RotatingFileHandler(os.path.join(app.root_path, "logs", "app.log"),
-                                                   maxBytes=(1048576*5), backupCount=5)
-fileHandler.setFormatter(logFormatter)
-rootLogger.addHandler(fileHandler)
+# fileHandler = logging.handlers.RotatingFileHandler(os.path.join(app.root_path, "logs", "app.log"),
+#                                                    maxBytes=(1048576*5), backupCount=5)
+# fileHandler.setFormatter(logFormatter)
+# rootLogger.addHandler(fileHandler)
 
 consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(logFormatter)

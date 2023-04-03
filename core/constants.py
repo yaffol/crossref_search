@@ -1,7 +1,10 @@
 import re
 
+CONSENT_COOKIE_KEY = "crossref-consent"
+CONSENT_COOKIE_VALUE = """By using the Crossref website you have agreed to our cookie policy."""
+
 # URLs
-BASE_API_URL = "http://api.crossref.org/"
+BASE_API_URL = "https://api.crossref.org/"
 WORKS_API_URL = BASE_API_URL + "works"
 FUNDERS_API_URL = BASE_API_URL + "funders"
 FUNDER_WORKS_API_URL = BASE_API_URL + "funders/{0}/works"
