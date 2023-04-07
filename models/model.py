@@ -1,6 +1,4 @@
-from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.sql import func
 from core.database import db
 
 

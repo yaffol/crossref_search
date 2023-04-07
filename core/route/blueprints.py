@@ -1,4 +1,3 @@
-from flask import Blueprint
 from core.route.search import search, help, home
 from core.route.orcid_auth import auth, orcid
 

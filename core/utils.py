@@ -1,4 +1,4 @@
-from flask import session, flash
+from flask import session
 import uuid
 import time
 import core.constants as constants
