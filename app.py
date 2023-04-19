@@ -1,11 +1,12 @@
+import os
+
 from flask import Flask, render_template, flash
 from flask_wtf.csrf import CSRFProtect
-from core.route import blueprints
-import os
 from flask_cors import CORS
+from flask_session import Session
 import logging.handlers
-from core.database import db
-from flask_migrate import Migrate
+
+from core.route import blueprints
 from core import utils, constants
 import settings
 
@@ -24,10 +25,17 @@ utils.set_base_path(app.root_path)
 app.config.from_object(settings)
 utils.set_app_config(app.config)
 
-blueprints.register_blueprints(app)
+app.config['SECRET_KEY'] = utils.get_app_config('SECRET_KEY')
+app.config['SESSION_COOKIE_NAME'] = 'crossref_session'
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = '/tmp'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = utils.get_app_config('SESSION_LIFETIME')
 
-db.init_app(app)
-migrate = Migrate(app, db)
+Session(app)
+
+blueprints.register_blueprints(app)
 
 
 # Logger configuration
@@ -75,7 +83,7 @@ def error_500(e):
 @app.context_processor
 def user_info():
     signed_in, info, session_expired = utils.signed_in_info()
-    context_dict = {'signed_in': signed_in, 'orcid_info':info}
+    context_dict = {'signed_in': signed_in, 'orcid_info': info}
     if session_expired:
         flash(constants.ORCID_SESSION_EXPIRED, constants.MESSAGE_TYPE_WARN)
     return context_dict

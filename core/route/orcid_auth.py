@@ -52,9 +52,7 @@ def orcid_callback():
             res_json = response.json()
             res_json['expires_at'] = int(time.time()) + res_json['expires_in']
 
-            if 'token' in request.args:
-                session_token = request.args['token']
-                auth_service.set_orcid_info(session_token, res_json)
+            auth_service.set_orcid_info(res_json)
 
             return render_template("auth_callback.html")
         else:
@@ -116,25 +114,27 @@ def create_orcid_json_item(doi_record):
     :param doi_record: doi record
     :return: list of dois claimed
     """
+    parser = utils.DOIRecordParser(doi_record)
+    record = parser.parse_doi_record()
     record = {
         "title": {
             "title": {
-                "value": doi_record['title'][0]
+                "value": record['title']
             },
             "subtitle": None,
             "translated-title": None
         },
         "journal-title": {
-            "value": doi_record['container-title'][0]
+            "value": record['container_title']
         },
         "short-description": None,
-        "type": doi_record['type'],
+        "type": record['type'],
         "external-ids": {
             "external-id": [{
                 "external-id-type": "doi",
-                "external-id-value": doi_record['DOI'],
+                "external-id-value": record['doi'],
                 "external-id-url": {
-                    "value": doi_record['URL']
+                    "value": record['url']
                 },
                 "external-id-relationship": "self"
             }]

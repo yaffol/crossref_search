@@ -44,9 +44,12 @@ UNKNOWN_ERROR = "Unknown error occurred "
 ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 
 # Session Constants
-ORCID = 'orcid'
+SESSION_ORCID = 'orcid'
 USER_TOKEN_ID = "user_token"
 ORCID_INFO = 'orcid_info'
+ACCESS_TOKEN = 'access_token'
+USER_NAME = 'user_name'
+EXPIRES_AT = 'expires_at'
 
 # Messages
 ORCID_SESSION_EXPIRED = "You have been signed out of ORCID"
