@@ -3,8 +3,6 @@ version: '3.6'
 services:
   crossref-search:
     build: .
-    depends_on:
-      - crossref-db
     environment:
       STAGE: test
     ports:
