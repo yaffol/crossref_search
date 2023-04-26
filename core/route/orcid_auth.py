@@ -116,32 +116,16 @@ def create_orcid_json_item(doi_record):
     """
     parser = utils.DOIRecordParser(doi_record)
     record = parser.parse_doi_record()
-    record = {
-        "title": {
-            "title": {
-                "value": record['title']
-            },
-            "subtitle": None,
-            "translated-title": None
-        },
-        "journal-title": {
-            "value": record['container_title']
-        },
-        "short-description": None,
-        "type": record['type'],
-        "external-ids": {
-            "external-id": [{
-                "external-id-type": "doi",
-                "external-id-value": record['doi'],
-                "external-id-url": {
-                    "value": record['url']
-                },
-                "external-id-relationship": "self"
-            }]
-        }
-    }
+    orcid_record = {"title": {"title": {"value": record['title']}}}
+    if 'container_title' in record and record['container_title']:
+        orcid_record["journal-title"] = {"value": record['container_title']}
+    if 'type' in record and record['type']:
+        orcid_record["type"] = record['type']
+    if 'doi' in record and record['doi']:
+        orcid_record["external-ids"] = {"external-id": [{"external-id-type": "doi", "external-id-value": record['doi'],
+                            "external-id-url": {"value": record['url']}, "external-id-relationship": "self"}]}
 
-    return json.dumps(record)
+    return json.dumps(orcid_record)
 
 
 @orcid.route("/claim")
