@@ -1,7 +1,10 @@
 import re
 
+CONSENT_COOKIE_KEY = "crossref-consent"
+CONSENT_COOKIE_VALUE = """By using the Crossref website you have agreed to our cookie policy."""
+
 # URLs
-BASE_API_URL = "http://api.crossref.org/"
+BASE_API_URL = "https://api.crossref.org/"
 WORKS_API_URL = BASE_API_URL + "works"
 FUNDERS_API_URL = BASE_API_URL + "funders"
 FUNDER_WORKS_API_URL = BASE_API_URL + "funders/{0}/works"
@@ -41,9 +44,11 @@ UNKNOWN_ERROR = "Unknown error occurred "
 ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 
 # Session Constants
-ORCID = 'orcid'
-USER_TOKEN_ID = "user_token"
+SESSION_ORCID = 'orcid'
 ORCID_INFO = 'orcid_info'
+ACCESS_TOKEN = 'access_token'
+USER_NAME = 'user_name'
+EXPIRES_AT = 'expires_at'
 
 # Messages
 ORCID_SESSION_EXPIRED = "You have been signed out of ORCID"

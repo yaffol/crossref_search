@@ -3,5 +3,5 @@
 *.pyo
 .idea/
 *.log
-/.env
-/postgres-data/
+/.env.bak
+/data/postgres-data/

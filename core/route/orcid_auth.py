@@ -22,8 +22,7 @@ def orcid_redirect():
     utils.set_host_url(request.host_url)
     client = WebApplicationClient(utils.get_app_config('ORCID_CLIENT_ID'))
     url = client.prepare_request_uri(utils.get_app_config('ORCID_AUTHORIZE_URL'),
-                                     redirect_uri=utils.get_host_url() + constants.ORCID_REDIRECT_URL
-                                                  + session[constants.USER_TOKEN_ID],
+                                     redirect_uri=utils.get_host_url() + constants.ORCID_REDIRECT_URL,
                                      scope="/authenticate /activities/update")
     return redirect(url)
 
@@ -52,9 +51,7 @@ def orcid_callback():
             res_json = response.json()
             res_json['expires_at'] = int(time.time()) + res_json['expires_in']
 
-            if 'token' in request.args:
-                session_token = request.args['token']
-                auth_service.set_orcid_info(session_token, res_json)
+            auth_service.set_orcid_info(res_json)
 
             return render_template("auth_callback.html")
         else:
@@ -102,7 +99,7 @@ def extract_orcid_dois(account_info):
                             id_val = id_loc['external-id-value']
 
                             if id_type.upper() == 'DOI':
-                                extracted_dois.append(id_val)
+                                extracted_dois.append(id_val.casefold())
     else:
         logging.error("API returns error. Status Code : " + str(response.status_code) + " - Message : " +
                      response.text)
@@ -116,32 +113,18 @@ def create_orcid_json_item(doi_record):
     :param doi_record: doi record
     :return: list of dois claimed
     """
-    record = {
-        "title": {
-            "title": {
-                "value": doi_record['title'][0]
-            },
-            "subtitle": None,
-            "translated-title": None
-        },
-        "journal-title": {
-            "value": doi_record['container-title'][0]
-        },
-        "short-description": None,
-        "type": doi_record['type'],
-        "external-ids": {
-            "external-id": [{
-                "external-id-type": "doi",
-                "external-id-value": doi_record['DOI'],
-                "external-id-url": {
-                    "value": doi_record['URL']
-                },
-                "external-id-relationship": "self"
-            }]
-        }
-    }
+    parser = utils.DOIRecordParser(doi_record)
+    record = parser.parse_doi_record()
+    orcid_record = {"title": {"title": {"value": record['title']}}}
+    if 'container_title' in record and record['container_title']:
+        orcid_record["journal-title"] = {"value": record['container_title']}
+    if 'type' in record and record['type']:
+        orcid_record["type"] = record['type']
+    if 'doi' in record and record['doi']:
+        orcid_record["external-ids"] = {"external-id": [{"external-id-type": "doi", "external-id-value": record['doi'],
+                            "external-id-url": {"value": record['url']}, "external-id-relationship": "self"}]}
 
-    return json.dumps(record)
+    return json.dumps(orcid_record)
 
 
 @orcid.route("/claim")
@@ -160,7 +143,7 @@ def claim():
 
             extracted_dois = extract_orcid_dois(orcid_info)
 
-            if doi in extracted_dois:
+            if doi.casefold() in extracted_dois:
                 status = 'ok'
             else:
                 url = constants.WORKS_API_URL + "/" + doi
@@ -194,7 +177,7 @@ def claim():
 
                         if response.status_code == 201:
                             extracted_dois = extract_orcid_dois(orcid_info)
-                            if doi in extracted_dois:
+                            if doi.casefold() in extracted_dois:
                                 status = 'ok_visible'
                             else:
                                 status = 'ok'
@@ -228,7 +211,7 @@ def dois_info():
         if orcid_info:
             extracted_dois = extract_orcid_dois(orcid_info)
             for doi in dois_list:
-                if doi in extracted_dois:
+                if doi.casefold() in extracted_dois:
                     dois_status[doi] = "claimed"
                 else:
                     dois_status[doi] = "not_claimed"

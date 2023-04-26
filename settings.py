@@ -5,6 +5,8 @@ dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), "config", ".env"))
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
+SESSION_LIFETIME = 3600*24*30
+
 SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 
 ORCID_CLIENT_ID = os.environ['ORCID_CLIENT_ID']

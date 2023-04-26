@@ -369,7 +369,6 @@ def resolve_references(citation_texts):
                                         "text": citation_text,
                                         "match": True,
                                         "doi": item['URL'],
-                                        "coins": "", #res['coins'],
                                         "score": item['score']
                                     })
 

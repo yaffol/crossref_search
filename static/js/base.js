@@ -18,4 +18,5 @@ _paq.push(['enableLinkTracking']);
 
 $(document).ready(function () {
     $('.number').formatNumber();
+    $.cookieBar();
 });

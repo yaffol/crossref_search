@@ -1,34 +1,47 @@
-from models.model import OrcidUser
-from core.database import db
+import logging
+from datetime import datetime, timedelta
+from flask import session
+import core.constants as constants
 
 
-def set_orcid_info(token, orcid_info):
+def set_orcid_info(orcid_info):
     """
-    Add or update orcid user info in database
-    :param token: session token
+    Add or update orcid user info to session
     :param orcid_info: orcid info to save
     :return:
     """
-    user = OrcidUser.query.filter_by(orcid_id=orcid_info['orcid']).first()
-    if user:
-        user.session_token = token
-        user.orcid_info = orcid_info
-        db.session.add(user)
-        db.session.commit()
-    else:
-        new_user = OrcidUser(session_token=token, orcid_id = orcid_info['orcid'], orcid_info = orcid_info)
-        db.session.add(new_user)
-        db.session.commit()
+    session[constants.ACCESS_TOKEN] = orcid_info['access_token']
+    session[constants.USER_NAME] = orcid_info['name']
+    session[constants.SESSION_ORCID] = orcid_info['orcid']
+    session[constants.EXPIRES_AT] = orcid_info['expires_at']
+    session.permanent = True
+    expires = datetime.now() + timedelta(minutes=10)
+    session['expires'] = expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 
-def get_orcid_info(token):
+def get_orcid_info():
     """
     Get the Orcid profile information
-    :param token: session token
     :return: orcid info
     """
-    user = OrcidUser.query.filter_by(session_token=token).first()
-    if user:
-        return user.orcid_info
+
+    if constants.ACCESS_TOKEN in session and constants.USER_NAME in session and constants.SESSION_ORCID in session and \
+       constants.EXPIRES_AT in session:
+        return {constants.ACCESS_TOKEN: session[constants.ACCESS_TOKEN],
+                constants.USER_NAME: session[constants.USER_NAME],
+                constants.SESSION_ORCID: session[constants.SESSION_ORCID],
+                constants.EXPIRES_AT: session[constants.EXPIRES_AT]}
     else:
         return None
+
+
+def remove_user_info(token):
+    """
+    Remove user info from database
+    :param token: user token
+    :return:
+    """
+    try:
+        OrcidUser.query.filter_by(session_token=token).delete()
+    except Exception as exp:
+        logging.exception("Error while deleting user info")

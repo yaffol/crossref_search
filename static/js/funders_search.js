@@ -6,7 +6,7 @@ $(document).ready(function () {
         },
         queryTokenizer: Bloodhound.tokenizers.whitespace,
         remote: {
-            url: '/search/funders?q=%QUERY',
+            url: '/search/funders?q=%QUERY&from_ui=yes',
             filter: function (dataResponse) {
                 return dataResponse;
             }
