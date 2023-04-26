@@ -52,9 +52,7 @@ def orcid_callback():
             res_json = response.json()
             res_json['expires_at'] = int(time.time()) + res_json['expires_in']
 
-            if 'token' in request.args:
-                session_token = request.args['token']
-                auth_service.set_orcid_info(session_token, res_json)
+            auth_service.set_orcid_info(res_json)
 
             return render_template("auth_callback.html")
         else:
@@ -116,32 +114,18 @@ def create_orcid_json_item(doi_record):
     :param doi_record: doi record
     :return: list of dois claimed
     """
-    record = {
-        "title": {
-            "title": {
-                "value": doi_record['title'][0]
-            },
-            "subtitle": None,
-            "translated-title": None
-        },
-        "journal-title": {
-            "value": doi_record['container-title'][0]
-        },
-        "short-description": None,
-        "type": doi_record['type'],
-        "external-ids": {
-            "external-id": [{
-                "external-id-type": "doi",
-                "external-id-value": doi_record['DOI'],
-                "external-id-url": {
-                    "value": doi_record['URL']
-                },
-                "external-id-relationship": "self"
-            }]
-        }
-    }
+    parser = utils.DOIRecordParser(doi_record)
+    record = parser.parse_doi_record()
+    orcid_record = {"title": {"title": {"value": record['title']}}}
+    if 'container_title' in record and record['container_title']:
+        orcid_record["journal-title"] = {"value": record['container_title']}
+    if 'type' in record and record['type']:
+        orcid_record["type"] = record['type']
+    if 'doi' in record and record['doi']:
+        orcid_record["external-ids"] = {"external-id": [{"external-id-type": "doi", "external-id-value": record['doi'],
+                            "external-id-url": {"value": record['url']}, "external-id-relationship": "self"}]}
 
-    return json.dumps(record)
+    return json.dumps(orcid_record)
 
 
 @orcid.route("/claim")
