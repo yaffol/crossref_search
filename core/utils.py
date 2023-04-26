@@ -18,21 +18,18 @@ def signed_in_info():
     Checks if the user is signed in and returns user info
     :return: True, user info if signed in else False and None. True if session expired
     """
-    if constants.USER_TOKEN_ID in session:
-        orcid_info = auth_service.get_orcid_info()
-        if orcid_info:
-            time_now = time.time()
-            if orcid_info['expires_at'] <= time_now:
-                logout()
-                # returns signed_in, orcid_info and expired
-                return False, None, True
-            else:
-                return True, orcid_info, False
+    orcid_info = auth_service.get_orcid_info()
+    if orcid_info:
+        time_now = time.time()
+        if orcid_info['expires_at'] <= time_now:
+            logout()
+            # returns signed_in, orcid_info and expired
+            return False, None, True
+        else:
+            return True, orcid_info, False
 
     else:
-        session[constants.USER_TOKEN_ID] = str(uuid.uuid4())
-
-    return False, None, False
+        return False, None, False
 
 
 def logout():

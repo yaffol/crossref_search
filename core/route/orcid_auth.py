@@ -22,8 +22,7 @@ def orcid_redirect():
     utils.set_host_url(request.host_url)
     client = WebApplicationClient(utils.get_app_config('ORCID_CLIENT_ID'))
     url = client.prepare_request_uri(utils.get_app_config('ORCID_AUTHORIZE_URL'),
-                                     redirect_uri=utils.get_host_url() + constants.ORCID_REDIRECT_URL
-                                                  + session[constants.USER_TOKEN_ID],
+                                     redirect_uri=utils.get_host_url() + constants.ORCID_REDIRECT_URL,
                                      scope="/authenticate /activities/update")
     return redirect(url)
 

@@ -45,7 +45,6 @@ ORCID_REDIRECT_URL = "auth/orcid/callback?token="
 
 # Session Constants
 SESSION_ORCID = 'orcid'
-USER_TOKEN_ID = "user_token"
 ORCID_INFO = 'orcid_info'
 ACCESS_TOKEN = 'access_token'
 USER_NAME = 'user_name'
