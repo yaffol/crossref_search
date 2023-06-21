@@ -3,7 +3,6 @@ import os
 from flask import Flask, render_template, flash
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
-from flask_session import Session
 import logging.handlers
 
 from core.route import blueprints
@@ -30,8 +29,6 @@ app.config['SESSION_COOKIE_NAME'] = 'crossref_session'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = utils.get_app_config('SESSION_LIFETIME')
-
-Session(app)
 
 blueprints.register_blueprints(app)
 
