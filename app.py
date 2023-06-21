@@ -27,8 +27,6 @@ utils.set_app_config(app.config)
 
 app.config['SECRET_KEY'] = utils.get_app_config('SECRET_KEY')
 app.config['SESSION_COOKIE_NAME'] = 'crossref_session'
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = '/tmp'
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = utils.get_app_config('SESSION_LIFETIME')
