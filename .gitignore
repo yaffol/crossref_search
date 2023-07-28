@@ -4,4 +4,3 @@
 .idea/
 *.log
 /.env.bak
-/data/postgres-data/
